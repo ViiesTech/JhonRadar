@@ -36,6 +36,8 @@ const InputField = ({
       underlineColorAndroid="transparent"
       multiline={multiline}
       textContentType={textContentType}
+      cursorColor={'white'}
+      
     />
   );
 };

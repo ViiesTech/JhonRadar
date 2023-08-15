@@ -37,9 +37,10 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     borderWidth: 1,
     borderColor: '#707070',
-    paddingHorizontal: 18,
+    paddingHorizontal: 20,
     borderRadius: 15,
     backgroundColor: '#BEBEBE',
+    paddingVertical:5
   },
   modal_container: {
     backgroundColor: 'rgba(220, 220, 204, 0.8)',

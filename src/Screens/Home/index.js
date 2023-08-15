@@ -45,10 +45,10 @@ const Home = ({navigation}) => {
   const [checked, setChecked] = useState();
 
   const [position, setPosition] = useState({
-    latitude: 40.7128,
-    longitude: 74.0060,
-    latitudeDelta: 0.001,
-    longitudeDelta: 0.001,
+    latitude: 	43.000000,
+    longitude: -75.000000,
+    latitudeDelta: 10.5555,
+    longitudeDelta: 10.5575,
   });
 
   useEffect(() => {
@@ -57,8 +57,8 @@ const Home = ({navigation}) => {
       setPosition({
         latitude: crd.latitude,
         longitude: crd.longitude,
-        latitudeDelta: 0.001,
-        longitudeDelta: 0.001,
+        latitudeDelta: 10.005,
+        longitudeDelta: 10.005,
       });
     });
   }, []);
@@ -114,26 +114,27 @@ const Home = ({navigation}) => {
     {
       id: 1,
       name: 'Icon 1',
-      iconName: 'person-search',
-      title: 'restaurent',
+      iconName: 'local-restaurant',
+      title: 'Restaurants',
     },
     {
       id: 2,
       name: 'Icon 2',
-      iconName: 'person-search',
-      title: 'caffee',
+      iconName: 'coffee',
+      title: 'Coffee',
     },
     {
       id: 3,
       name: 'Icon 2',
-      iconName: 'person-search',
-      title: 'caffee',
+      iconName: 'local-hospital',
+      title: 'Hospital',
+    
     },
     {
       id: 4,
       name: 'Icon 2',
-      iconName: 'person-search',
-      title: 'caffee',
+      iconName: 'coffee',
+      title: 'Coffee',
     },
   ];
 
@@ -187,8 +188,8 @@ const Home = ({navigation}) => {
             return (
               <View style={styles.flatlist_container}>
                 <TouchableOpacity style={styles.nearByData_View}>
-                  <MaterialIcons name={item.iconName} size={24} color="white" />
-                  <CustomText text={item.title} />
+                  <MaterialIcons name={item.iconName} size={18} color="white" />
+                  <CustomText text={item.title} style={{ marginHorizontal:6, fontSize:16}} />
                 </TouchableOpacity>
               </View>
             );
@@ -379,7 +380,9 @@ const Home = ({navigation}) => {
               height: 1.5,
               marginTop: 20,
             }}></View>
-          <View style={{marginHorizontal: 25, marginTop: 15}}>
+            <ScrollView>
+
+           <View style={{marginHorizontal: 25, marginTop: 15}}>
             <InputField placeholder={'Enter Your Business Location'} />
             <InputField placeholder={'Business Name'} />
             <InputField placeholder={'Business Category'} />
@@ -391,6 +394,7 @@ const Home = ({navigation}) => {
               onPress={() => toggleSelectPackage()}
             />
           </View>
+            </ScrollView>
         </View>
       </Modal>
       {/* Select package.. */}
@@ -444,6 +448,7 @@ const Home = ({navigation}) => {
                 uncheckedColor="#fff"
                 status={checked === 'first' ? 'checked' : 'unchecked'}
                 style={styles.radiobtn}
+                onPress={() => setChecked('first')}
               />
               <View style={{marginHorizontal: 15}}>
                 <CustomText
@@ -467,6 +472,7 @@ const Home = ({navigation}) => {
                 uncheckedColor="#fff"
                 status={checked === 'second' ? 'checked' : 'unchecked'}
                 style={styles.radiobtn}
+                onPress={() => setChecked('second')}
               />
               <View style={{marginHorizontal: 15}}>
                 <CustomText
@@ -490,6 +496,7 @@ const Home = ({navigation}) => {
                 uncheckedColor="#fff"
                 status={checked === 'third' ? 'checked' : 'unchecked'}
                 style={styles.radiobtn}
+                onPress={() => setChecked('third')}
               />
               <View style={{marginHorizontal: 15}}>
                 <CustomText
@@ -974,6 +981,8 @@ const Home = ({navigation}) => {
           </ScrollView>
         </View>
       </Modal>
+
+      
     </View>
   );
 };
