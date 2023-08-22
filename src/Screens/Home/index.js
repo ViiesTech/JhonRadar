@@ -18,19 +18,19 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import CustomButton from '../../Components/Button';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 
-import CustomText from '../../Components/Text';
 import images from '../../Constants/images';
-import InputField from '../../Components/InputFiled';
 import {RadioButton} from 'react-native-paper';
 import {COLORS} from '../../Constants/theme';
 
 import Lottie from 'lottie-react-native';
+import CustomText from '../../Components/Text';
+import InputField from '../../Components/InputFiled';
+import CustomButton from '../../Components/Button';
 
 const Home = ({navigation}) => {
   const [isModalVisible, setModalVisible] = useState(false);

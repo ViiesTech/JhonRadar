@@ -2,8 +2,8 @@ import {View, TouchableOpacity, Image} from 'react-native';
 import React from 'react';
 import FastImage from 'react-native-fast-image';
 import images from '../../Constants/images';
-import CustomText from '../../Components/Text';
 import {styles} from './index.style';
+import CustomText from '../../Components/Text';
 
 const GoThrough = ({navigation}) => {
   return (
@@ -53,7 +53,7 @@ const GoThrough = ({navigation}) => {
             } style={styles.policyTxt}
           />
           <TouchableOpacity
-           onPress={()=> navigation.navigate('MainStack')}
+           onPress={()=> navigation.navigate('Login')}
             style={[
               styles.container,
               {marginTop: 30, backgroundColor: '#376CE3'},
