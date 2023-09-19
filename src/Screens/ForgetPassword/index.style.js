@@ -23,5 +23,11 @@ export const styles = StyleSheet.create({
     alignItems:'center',
     justifyContent:'center',
     marginTop:30
-  }
+  },
+  errors: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "white",
+    marginTop: 5,
+  },
 });

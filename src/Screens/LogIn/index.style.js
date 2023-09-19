@@ -40,4 +40,10 @@ export const styles = StyleSheet.create({
   txt:{
     color:'black'
   },
+  errors: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "white",
+    marginTop: 5,
+  },
 });

@@ -1,7 +1,6 @@
 import React from "react";
 import { StyleSheet, TextInput } from "react-native";
 
-
 const InputField = ({
   style,
   placeholder,
@@ -16,7 +15,7 @@ const InputField = ({
   value,
   returnKeyType,
   multiline,
-  textContentType
+  textContentType,
 }) => {
   return (
     <TextInput
@@ -27,7 +26,7 @@ const InputField = ({
       placeholder={placeholder}
       secureTextEntry={secureText}
       style={[styles.input, style]}
-      placeholderTextColor={'#fff'}
+      placeholderTextColor={"#fff"}
       defaultValue={defaultValue}
       onFocus={onFocus}
       onBlur={onBlur}
@@ -36,8 +35,7 @@ const InputField = ({
       underlineColorAndroid="transparent"
       multiline={multiline}
       textContentType={textContentType}
-      cursorColor={'white'}
-      
+      cursorColor={"white"}
     />
   );
 };
@@ -46,12 +44,12 @@ const styles = StyleSheet.create({
     height: 50,
     marginTop: 20,
     paddingHorizontal: 30,
-    color: '#fff',
-    backgroundColor: '#73737E',
+    color: "#fff",
+    backgroundColor: "#73737E",
     borderRadius: 10,
-    borderWidth:0.5,
-    borderColor:'#1EF1F5',
-    opacity:0.8
+    borderWidth: 0.5,
+    borderColor: "#1EF1F5",
+    opacity: 0.8,
   },
 });
 

@@ -16,10 +16,13 @@
     "@react-native-masked-view/masked-view": "^0.2.9",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/stack": "^6.3.17",
+    "@reduxjs/toolkit": "^1.9.5",
+    "axios": "^1.5.0",
     "formik": "^2.4.2",
     "lottie-react-native": "^5.1.6",
     "react": "18.2.0",
     "react-native": "0.72.3",
+    "react-native-animated-spinkit": "^1.5.2",
     "react-native-check-box": "^2.1.7",
     "react-native-confirmation-code-field": "^7.3.1",
     "react-native-fast-image": "^8.6.3",
@@ -33,7 +36,12 @@
     "react-native-screens": "^3.22.1",
     "react-native-splash-screen": "^3.3.0",
     "react-native-toast-message": "^2.1.6",
-    "react-native-vector-icons": "^10.0.0"
+    "react-native-vector-icons": "^10.0.0",
+    "react-redux": "^8.1.2",
+    "redux": "^4.2.1",
+    "redux-persist": "^6.0.0",
+    "redux-thunk": "^2.4.2",
+    "yup": "^1.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

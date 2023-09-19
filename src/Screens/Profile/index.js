@@ -10,7 +10,7 @@ import CustomText from '../../Components/Text';
 import CustomButton from '../../Components/Button';
 
 const Profile = ({navigation}) => {
-  const userData = useSelector((state) => state.data.user);
+  // const userData = useSelector((state) => state.data.user);
   console.log('userrrrrrrrrrrrrrrrrrrrrr',userData.user)
 
 
@@ -30,7 +30,7 @@ const dispatch = useDispatch();
             <CustomText text={userData.email} />
           </View>
         <CustomButton buttonText={'Edit Profile'} onPress={()=> navigation.navigate('EditProfile')}/>
-        <CustomButton buttonText={'LogOut'} onPress={()=> dispatch(logOut())}/>
+        {/* <CustomButton buttonText={'LogOut'} onPress={()=> dispatch(logOut())}/> */}
  
         </View>
       </View>

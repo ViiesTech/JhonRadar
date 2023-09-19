@@ -1,46 +1,66 @@
-import {View, Text, TouchableOpacity} from 'react-native';
-import React, {useState} from 'react';
-import {styles} from './index.style';
-import BackButton from '../../Components/Back Button';
-import FastImage from 'react-native-fast-image';
-import images from '../../Constants/images';
-import Modal from 'react-native-modal';
+import { View, ScrollView } from "react-native";
+import React, { useState } from "react";
+import { styles } from "./index.style";
+import BackButton from "../../Components/Back Button";
+import FastImage from "react-native-fast-image";
+import images from "../../Constants/images";
+import Modal from "react-native-modal";
 import Toast from "react-native-toast-message";
-import Lottie from 'lottie-react-native';
-import CustomText from '../../Components/Text';
-import InputField from '../../Components/InputFiled';
-import CustomButton from '../../Components/Button';
-
-const ResetPassword = ({navigation, route}) => {
-  const {ids} = route.params;
-  console.log('idddddss', ids);
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+import Lottie from "lottie-react-native";
+import CustomText from "../../Components/Text";
+import InputField from "../../Components/InputFiled";
+import CustomButton from "../../Components/Button";
+import { Formik } from "formik";
+import { resetPasswordValidationSchema } from "../Utills/Validations";
+import BasUrl from "../../BasUrl";
+import axios from "axios";
+import WaveLoader from "../../Components/WaveLoader";
+const ResetPassword = ({ navigation, route }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isLoader, setIsLoader] = useState(false);
 
-  // const {itemId, id} = route.params;
+  const { itemId, id } = route.params;
+  console.log("idddddddd", id);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
 
-   
-
-  const handlePasswordChange = text => {
-    setPassword(text);
-  };
-
-  const handleConfirmPasswordChange = text => {
-    setConfirmPassword(text);
-  };
-  const handleSubmit = () => {
-    if (password !== confirmPassword) {
-      setPasswordError('Passwords do not match');
-    } else {
-      setPasswordError('');
-    }
+  // API
+  const resetPassword = async (values, { setValues }) => {
+    setIsLoader(true);
+    let data = JSON.stringify({
+      id: id,
+      password: values.password,
+      password_confirmation: values.confirmPassword,
+    });
+    let config = {
+      method: "post",
+      maxBodyLength: Infinity,
+      url: `${BasUrl}resetForgetPassword`,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+    axios
+      .request(config)
+      .then((response) => {
+        setIsLoader(false);
+        console.log("response  ======>>>>>>>>", JSON.stringify(response.data));
+        const res = response.data;
+        if (res.status === "Success") {
+          navigation.navigate("Login");
+          showToast("success", res.message);
+        } else {
+          showToast("error", res.message);
+        }
+      })
+      .catch((error) => {
+        setIsLoader(false);
+        console.log(error);
+      });
   };
 
   const showToast = (type, msg) => {
@@ -51,67 +71,71 @@ const ResetPassword = ({navigation, route}) => {
   };
 
   return (
-    <FastImage source={images.AuthBackground} style={{flex: 1}}>
+    <FastImage source={images.AuthBackground} style={{ flex: 1 }}>
       <BackButton onPressBack={() => navigation.goBack()} />
-
-      <View style={{height: 100}}></View>
-      <View style={styles.container}>
-        <CustomText text={'Reset Your Password'} style={styles.screen_title} />
-        <InputField
-          placeholder={'NewPassword'}
-          value={password}
-          onChangeText={handlePasswordChange}
-        />
-        <InputField
-          placeholder={'ReEnter Password'}
-          value={confirmPassword}
-          onChangeText={handleConfirmPasswordChange}
-        />
-        {passwordError && <CustomText text={setPasswordError()} />}
-    
-        <CustomButton
-          buttonText={'Submit'}
-          onPress={() => {
-            AddNewPassword()
+      <ScrollView style={{ flex: 1 }}>
+        <View style={{ height: 100 }}></View>
+        <Formik
+          initialValues={{
+            password: "",
+            confirmPassword: "",
           }}
-        />
- 
-      </View>
-      <View>
-            <Modal isVisible={isModalVisible}>
-              <FastImage
-                source={images.Background}
-                style={{flex: 0.6, alignItems: 'center'}}>
-              {/* <View
-                style={{
-                  flex: 0.6,
-                  backgroundColor: '#E61917',
-                }}> */}
-                <Lottie
-                  source={images.passwordLottie}
-                  autoPlay
-                  style={{
-                    height: 120,
-                    width: 120,
-                    marginTop: 20,
-                  }}
-                />
-                <CustomText
-                  text={'Successfully Changed Password'}
-                  style={{fontSize: 18, fontWeight: 'bold', marginTop: 15}}
-                />
+          validateOnMount={true}
+          onSubmit={(values, { setSubmitting, setValues }) =>
+            resetPassword(values, { setSubmitting, setValues })
+          }
+          validationSchema={resetPasswordValidationSchema}
+        >
+          {({
+            handleSubmit,
+            handleChange,
+            handleBlur,
+            values,
+            touched,
+            errors,
+            isValid,
+          }) => (
+            <View style={styles.container}>
+              <CustomText
+                text={"Reset Your Password"}
+                style={styles.screen_title}
+              />
+              <InputField
+                placeholder={"password"}
+                value={values.password}
+                onBlur={handleBlur("password")}
+                onChangeText={handleChange("password")}
+                secureTextEntry
+              />
+              {errors.password && touched.password && (
+                <CustomText text={errors.password} />
+              )}
+
+              <InputField
+                placeholder={"Re-type Password"}
+                value={values.confirmPassword}
+                onChangeText={handleChange("confirmPassword")}
+                onBlur={handleBlur("confirmPassword")}
+                secureTextEntry
+              />
+              {errors.confirmPassword && touched.confirmPassword && (
+                <CustomText text={errors.confirmPassword} />
+              )}
+              {isLoader ? (
+                <WaveLoader />
+              ) : (
                 <CustomButton
+                  buttonText={"Submit"}
                   onPress={() => {
-                    navigation.navigate('Login');
+                    handleSubmit(values);
                   }}
-                  buttonText={'Back To Login'}
-                  style={{width: '80%'}}
                 />
-                </FastImage>
-              {/* </View> */}
-            </Modal>
-          </View>
-          <Toast/>
+              )}
+            </View>
+          )}
+        </Formik>
+      </ScrollView>
+      <Toast />
     </FastImage>
   );
 };

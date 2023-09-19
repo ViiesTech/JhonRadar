@@ -10,22 +10,56 @@ import Toast from "react-native-toast-message";
 import CustomText from "../../Components/Text";
 import InputField from "../../Components/InputFiled";
 import CustomButton from "../../Components/Button";
+import { Formik } from "formik";
+import { SignUpValidationSchema } from "../Utills/Validations";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import LoaderModal from "../../Components/LoaderModal";
+import BasUrl from "../../BasUrl";
 
 const SignUp = ({ navigation }) => {
   const [checked, setChecked] = useState("first");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoader, setIsLoader] = useState(false);
 
- 
-  const emptyStats = () => {
-    setName("");
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
+  const loader = useSelector((state) => state.authData.isLoader);
+
+  const RegistorUser = async (values, { setSubmitting, setValues }) => {
+    setIsLoader(true);
+    let data = JSON.stringify({
+      name: values.name,
+      email: values.email,
+      password: values.password,
+      tc: true,
+    });
+
+    let config = {
+      method: "post",
+      maxBodyLength: Infinity,
+      url: `${BasUrl}Register`,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+
+    axios
+      .request(config)
+      .then((response) => {
+        setIsLoader(false);
+        navigation.navigate("Login");
+
+        console.log("loggggggggggggggggg", JSON.stringify(response.data));
+        setValues({ name: "", email: "", password: "", confirmPassword: "" });
+      })
+      .catch((error) => {
+        setIsLoader(false);
+
+        showToast("error", error.message);
+        console.log("erorrrrrrrrrrrrrr", error.message);
+      });
   };
+
   const showToast = (type, msg) => {
     Toast.show({
       type: type,
@@ -36,65 +70,107 @@ const SignUp = ({ navigation }) => {
     <FastImage source={images.AuthBackground} style={{ flex: 1 }}>
       <ScrollView style={{ flex: 1 }}>
         <BackButton onPressBack={() => navigation.goBack()} />
-        <Image
-          source={images.logo}
-          style={{ height: 70, width: 70, alignSelf: "center", marginTop: 20 }}
-        />
-
-        <View style={styles.main_container}>
-          <View style={styles.container}>
-            <CustomText
-              text={"Create an account"}
-              style={styles.screen_title}
-            />
-            <InputField
-              placeholder={"Full Name"}
-              value={name}
-              onChangeText={setName}
-            />
-            <InputField
-              placeholder={"Email Address"}
-              value={email}
-              onChangeText={setEmail}
-            />
-            <InputField
-              placeholder={"password"}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-            <InputField
-              placeholder={"Re-type Password"}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-            />
-            <View style={styles.checkView}>
-              <RadioButton
-                value="first"
-                color={COLORS.primary}
-                uncheckedColor="#949494"
-                status={checked === "first" ? "checked" : "unchecked"}
-              />
-              <CustomText
-                text={"I have read and accept the "}
-                style={styles.termsText}
-              />
-              <TouchableOpacity>
+        <View style={{ height: 100 }}></View>
+        <Formik
+          initialValues={{
+            name: "",
+            email: "",
+            password: "",
+            confirmPassword: "",
+          }}
+          validateOnMount={true}
+          onSubmit={(values, { setSubmitting, setValues }) =>
+            RegistorUser(values, { setSubmitting, setValues })
+          }
+          validationSchema={SignUpValidationSchema}
+        >
+          {({
+            handleSubmit,
+            handleChange,
+            handleBlur,
+            values,
+            touched,
+            errors,
+            isValid,
+          }) => (
+            <View style={styles.main_container}>
+              <View style={styles.container}>
                 <CustomText
-                  text={"terms and conditions"}
-                  style={styles.termsTxt}
+                  text={"Create an account"}
+                  style={styles.screen_title}
                 />
-              </TouchableOpacity>
+                <InputField
+                  placeholder={"Full Name"}
+                  value={values.name}
+                  onBlur={handleBlur("name")}
+                  onChangeText={handleChange("name")}
+                />
+                {errors.name && touched.name && (
+                  <CustomText text={errors.name} />
+                )}
+                <InputField
+                  placeholder={"Email Address"}
+                  value={values.email}
+                  onBlur={handleBlur("email")}
+                  onChangeText={handleChange("email")}
+                />
+                {errors.email && touched.email && (
+                  <CustomText text={errors.email} />
+                )}
+                <InputField
+                  placeholder={"password"}
+                  value={values.password}
+                  onBlur={handleBlur("password")}
+                  onChangeText={handleChange("password")}
+                  secureTextEntry
+                />
+                {errors.password && touched.password && (
+                  <CustomText text={errors.password} />
+                )}
+
+                <InputField
+                  placeholder={"Re-type Password"}
+                  value={values.confirmPassword}
+                  onChangeText={handleChange("confirmPassword")}
+                  onBlur={handleBlur("confirmPassword")}
+                  secureTextEntry
+                />
+                {errors.confirmPassword && touched.confirmPassword && (
+                  <CustomText text={errors.confirmPassword} />
+                )}
+                <View style={styles.checkView}>
+                  <RadioButton
+                    value="first"
+                    color={COLORS.primary}
+                    uncheckedColor="#949494"
+                    status={checked === "first" ? "checked" : "unchecked"}
+                  />
+                  <CustomText
+                    text={"I have read and accept the "}
+                    style={styles.termsText}
+                  />
+                  <TouchableOpacity>
+                    <CustomText
+                      text={"terms and conditions"}
+                      style={styles.termsTxt}
+                    />
+                  </TouchableOpacity>
+                </View>
+                {isLoader ? (
+                  <LoaderModal />
+                ) : (
+                  <CustomButton
+                    onPress={() => {
+                      // RegistorUser()
+                      handleSubmit(values);
+                    }}
+                    buttonText={"Create an account"}
+                  />
+                )}
+              </View>
             </View>
-         
-            <CustomButton
-              onPress={() => RegisterUser()}
-              buttonText={"Create an account"}
-            />
-          
-          </View>
-        </View>
+          )}
+        </Formik>
       </ScrollView>
       <Toast />
     </FastImage>

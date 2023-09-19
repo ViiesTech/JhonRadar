@@ -18,6 +18,9 @@ import FastImage from "react-native-fast-image";
 import Toast from "react-native-toast-message";
 import CustomText from "../../Components/Text";
 import CustomButton from "../../Components/Button";
+import BasUrl from "../../BasUrl";
+import axios from "axios";
+import WaveLoader from "../../Components/WaveLoader";
 
 const CELL_COUNT = 4;
 const Otp = ({ navigation, route }) => {
@@ -26,7 +29,7 @@ const Otp = ({ navigation, route }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isLoader, setIsLoader] = useState(false);
 
-  const { itemId, id } = route.params;
+  const { id } = route.params;
 
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
@@ -70,7 +73,44 @@ const Otp = ({ navigation, route }) => {
   }, [count]);
 
   //api
+  const CheckingOtp = () => {
+    setIsLoader(true);
+    let data = JSON.stringify({
+      otp: value,
+      id: id,
+    });
 
+    let config = {
+      method: "post",
+      maxBodyLength: Infinity,
+      url: `${BasUrl}VerifyOtp`,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+
+    axios
+      .request(config)
+      .then((response) => {
+        setIsLoader(false);
+        console.log(JSON.stringify(response));
+        const res = response.data;
+        if (res.success === true) {
+          navigation.navigate("ResetPassword", {
+            id: id,
+          });
+          showToast("success", res.message);
+        } else {
+          showToast("error", res.message);
+        }
+      })
+      .catch((error) => {
+        setIsLoader(false);
+        console.log(error);
+      });
+  };
 
   const showToast = (type, msg) => {
     Toast.show({
@@ -83,10 +123,10 @@ const Otp = ({ navigation, route }) => {
     <FastImage source={images.AuthBackground} style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
         <BackButton onPressBack={() => navigation.goBack()} />
-        <Image
+        {/* <Image
           source={images.logo}
           style={{ height: 70, width: 70, alignSelf: "center", marginTop: 30 }}
-        />
+        /> */}
 
         <ScrollView
           contentContainerStyle={{
@@ -95,7 +135,7 @@ const Otp = ({ navigation, route }) => {
             marginHorizontal: 20,
           }}
         >
-          <CustomText 
+          <CustomText
             text={"Email"}
             style={{ fontSize: 20, fontWeight: "bold" }}
           />
@@ -132,13 +172,20 @@ const Otp = ({ navigation, route }) => {
               marginTop: 10,
             }}
           />
-          {/* <CustomButton buttonText={'Verify'} onPress={() => CheckingOtp()} /> */}
-     
-            <CustomButton buttonText={"Verify"} onPress={() => CheckingOtp()} />
- 
+          {isLoader ? (
+            <WaveLoader />
+          ) : (
+            <CustomButton
+              buttonText={"Verify"}
+              onPress={() => {
+                CheckingOtp();
+              }}
+            />
+          )}
+
           <View>
             <Modal isVisible={isModalVisible}>
-              <FastImage
+              {/* <FastImage
                 source={images.Background}
                 style={{ flex: 0.6, alignItems: "center" }}
               >
@@ -147,28 +194,26 @@ const Otp = ({ navigation, route }) => {
                   flex: 0.6,
                   backgroundColor: '#E61917',
                 }}> */}
-                <Lottie
-                  source={images.tickLottie}
-                  autoPlay
-                  style={{
-                    height: 120,
-                    width: 120,
-                    marginTop: 20,
-                  }}
-                />
-                <CustomText
-                  text={"Successfully Verified"}
-                  style={{ fontSize: 18, fontWeight: "bold", marginTop: 15 }}
-                />
-                <CustomButton
-                  onPress={() => {
-                    navigation.navigate("Login");
-                  }}
-                  buttonText={"Back To Login"}
-                  style={{ width: "80%" }}
-                />
-              </FastImage>
-              {/* </View> */}
+              <Lottie
+                source={images.tickLottie}
+                autoPlay
+                style={{
+                  height: 120,
+                  width: 120,
+                  marginTop: 20,
+                }}
+              />
+              <CustomText
+                text={"Successfully Verified"}
+                style={{ fontSize: 18, fontWeight: "bold", marginTop: 15 }}
+              />
+              <CustomButton
+                onPress={() => {
+                  navigation.navigate("Login");
+                }}
+                buttonText={"Back To Login"}
+                style={{ width: "80%" }}
+              />
             </Modal>
           </View>
         </ScrollView>

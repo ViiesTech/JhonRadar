@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '../../Constants/theme';
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { COLORS } from "../../Constants/theme";
 
 const CustomButton = ({
   style,
@@ -8,17 +8,16 @@ const CustomButton = ({
   buttonText,
   textStyle,
   icon_view,
-  isDisabled= false,
+  isDisabled = false,
 }) => {
   return (
     <TouchableOpacity
-      
       onPress={onPress}
       style={[styles.container, style]}
-      disabled={isDisabled}>
+      disabled={isDisabled}
+    >
       <View style={[styles.row, icon_view]}>
         <Text style={[styles.defaultText, textStyle]}>{buttonText}</Text>
-       
       </View>
     </TouchableOpacity>
   );
@@ -27,28 +26,27 @@ const CustomButton = ({
 const styles = StyleSheet.create({
   container: {
     height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '90%',
-    backgroundColor:'#376CE3',
-    borderRadius:25,
-    marginTop:40,
-    alignSelf:'center'
+    justifyContent: "center",
+    alignItems: "center",
+    width: "90%",
+    backgroundColor: "#376CE3",
+    borderRadius: 25,
+    marginTop: 40,
+    alignSelf: "center",
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   defaultText: {
-    color:'#fff',
-    fontSize:16
+    color: "#fff",
+    fontSize: 16,
   },
   icon: {
-    width: '12%',
+    width: "12%",
     paddingRight: 30,
   },
- 
 });
 
 export default CustomButton;

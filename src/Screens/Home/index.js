@@ -6,33 +6,35 @@ import {
   TouchableOpacity,
   Text,
   ScrollView,
-  KeyboardAvoidingView
-} from 'react-native';
-import React, {useState, useEffect} from 'react';
-import MapView, {PROVIDER_GOOGLE} from 'react-native-maps';
-import Modal from 'react-native-modal';
-import {Marker} from 'react-native-maps';
-import Geolocation from '@react-native-community/geolocation';
-import {styles} from './index.style';
+  KeyboardAvoidingView,
+} from "react-native";
+import React, { useState, useEffect } from "react";
+import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import Modal from "react-native-modal";
+import { Marker } from "react-native-maps";
+import Geolocation from "@react-native-community/geolocation";
+import { styles } from "./index.style";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import Entypo from 'react-native-vector-icons/Entypo';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import Fontisto from 'react-native-vector-icons/Fontisto';
+} from "react-native-responsive-screen";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import Entypo from "react-native-vector-icons/Entypo";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import Fontisto from "react-native-vector-icons/Fontisto";
 
-import images from '../../Constants/images';
-import {RadioButton} from 'react-native-paper';
-import {COLORS} from '../../Constants/theme';
+import images from "../../Constants/images";
+import { RadioButton } from "react-native-paper";
+import { COLORS } from "../../Constants/theme";
 
-import Lottie from 'lottie-react-native';
-import CustomText from '../../Components/Text';
-import InputField from '../../Components/InputFiled';
-import CustomButton from '../../Components/Button';
+import Lottie from "lottie-react-native";
+import CustomText from "../../Components/Text";
+import InputField from "../../Components/InputFiled";
+import CustomButton from "../../Components/Button";
+import { useDispatch } from "react-redux";
+import { logOut } from "../../Redux/authSlice";
 
-const Home = ({navigation}) => {
+const Home = ({ navigation }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isregisterModalVisible, setRegisterModalVisible] = useState(false);
   const [isplaceYourAddModal, setPlaceYourAddModal] = useState(false);
@@ -43,16 +45,17 @@ const Home = ({navigation}) => {
   const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
 
   const [checked, setChecked] = useState();
+  const dispatch = useDispatch();
 
   const [position, setPosition] = useState({
-    latitude: 	43.000000,
-    longitude: -75.000000,
+    latitude: 43.0,
+    longitude: -75.0,
     latitudeDelta: 10.5555,
     longitudeDelta: 10.5575,
   });
 
   useEffect(() => {
-    Geolocation.getCurrentPosition(pos => {
+    Geolocation.getCurrentPosition((pos) => {
       const crd = pos.coords;
       setPosition({
         latitude: crd.latitude,
@@ -113,175 +116,203 @@ const Home = ({navigation}) => {
   const nearByData = [
     {
       id: 1,
-      name: 'Icon 1',
-      iconName: 'local-restaurant',
-      title: 'Restaurants',
+      name: "Icon 1",
+      iconName: "local-restaurant",
+      title: "Restaurants",
     },
     {
       id: 2,
-      name: 'Icon 2',
-      iconName: 'coffee',
-      title: 'Coffee',
+      name: "Icon 2",
+      iconName: "coffee",
+      title: "Coffee",
     },
     {
       id: 3,
-      name: 'Icon 2',
-      iconName: 'local-hospital',
-      title: 'Hospital',
-    
+      name: "Icon 2",
+      iconName: "local-hospital",
+      title: "Hospital",
     },
     {
       id: 4,
-      name: 'Icon 2',
-      iconName: 'coffee',
-      title: 'Coffee',
+      name: "Icon 2",
+      iconName: "coffee",
+      title: "Coffee",
     },
   ];
 
   return (
-    <View style={{flex: 1, }}>
+    <View style={{ flex: 1 }}>
       <View style={styles.menuBtn}>
-        <TouchableOpacity style={{position:"absolute"}} onPress={() => toggleModal()}>
-          <Entypo name={'menu'} size={30} color={'#fff'} style={{}} />
+        <TouchableOpacity
+          style={{ position: "absolute" }}
+          onPress={() => toggleModal()}
+        >
+          <Entypo name={"menu"} size={30} color={"#fff"} style={{}} />
         </TouchableOpacity>
       </View>
       <MapView
-          style={styles.map}
-          initialRegion={position}
-          showsUserLocation={true}
-          showsMyLocationButton={true}
-          followsUserLocation={true}
-          showsCompass={true}
-          scrollEnabled={true}
-          zoomEnabled={true}
-          pitchEnabled={true}
-          rotateEnabled={true}>
-          <Marker
-            title="Yor are here"
-            description="This is a description"
-            coordinate={position}
-          />
-        </MapView>
+        style={styles.map}
+        initialRegion={position}
+        showsUserLocation={true}
+        showsMyLocationButton={true}
+        followsUserLocation={true}
+        showsCompass={true}
+        scrollEnabled={true}
+        zoomEnabled={true}
+        pitchEnabled={true}
+        rotateEnabled={true}
+      >
+        <Marker
+          title="Yor are here"
+          description="This is a description"
+          coordinate={position}
+        />
+      </MapView>
       {/* <View style={styles.container}></View> */}
       <View style={styles.backcard}>
         <View style={styles.bottom_view}>
           <MaterialIcons
-            name={'location-pin'}
+            name={"location-pin"}
             size={25}
-            color={'#fff'}
-            style={{marginTop: 10}}
+            color={"#fff"}
+            style={{ marginTop: 10 }}
           />
 
-          <TextInput placeholder="Search Here..." placeholderTextColor={'white'} style={{color:'white'}}></TextInput>
+          <TextInput
+            placeholder="Search Here..."
+            placeholderTextColor={"white"}
+            style={{ color: "white" }}
+          ></TextInput>
           <MaterialIcons
-            name={'search'}
+            name={"search"}
             size={25}
-            color={'#fff'}
-            style={{marginTop: 10}}
+            color={"#fff"}
+            style={{ marginTop: 10 }}
           />
         </View>
         <FlatList
           showsHorizontalScrollIndicator={false}
           horizontal
           data={nearByData}
-          renderItem={({item}) => {
+          renderItem={({ item }) => {
             return (
               <View style={styles.flatlist_container}>
                 <TouchableOpacity style={styles.nearByData_View}>
                   <MaterialIcons name={item.iconName} size={18} color="white" />
-                  <CustomText text={item.title} style={{ marginHorizontal:6, fontSize:16}} />
+                  <CustomText
+                    text={item.title}
+                    style={{ marginHorizontal: 6, fontSize: 16 }}
+                  />
                 </TouchableOpacity>
               </View>
             );
           }}
         />
-        <View style={{height: 40}} />
+        <View style={{ height: 40 }} />
       </View>
       {/* menu modal */}
       <Modal
         animationIn="slideInLeft"
         animationOut="slideOutRight"
         isVisible={isModalVisible}
-        style={styles.modal_Main_container}>
+        style={styles.modal_Main_container}
+      >
         <View style={styles.modal_container}>
-          <View style={[styles.closebtn, {alignSelf: 'flex-end'}]}>
+          <View style={[styles.closebtn, { alignSelf: "flex-end" }]}>
             <TouchableOpacity onPress={() => toggleModal()}>
-              <Ionicons name={'close'} size={30} color={'#fff'} style={{}} />
+              <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
             </TouchableOpacity>
           </View>
-          <View style={{flexDirection: 'row'}}>
-            <View style={{bottom: 20, marginLeft: 30}}>
+          <View style={{ flexDirection: "row" }}>
+            <View style={{ bottom: 20, marginLeft: 30 }}>
               <Image source={images.avatar} />
             </View>
-            <View style={{bottom: 20, marginLeft: 15}}>
+            <View style={{ bottom: 20, marginLeft: 15 }}>
               <CustomText
-                text={'Lilly Unrah'}
-                style={{fontSize: 16, fontWeight: '700'}}
+                text={"Lilly Unrah"}
+                style={{ fontSize: 16, fontWeight: "700" }}
               />
               <TouchableOpacity
                 style={{
                   height: 25,
                   width: 85,
-                  backgroundColor: 'rgb(208, 208, 229)',
+                  backgroundColor: "rgb(208, 208, 229)",
                   marginTop: 38,
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                  justifyContent: "center",
+                  alignItems: "center",
                   borderRadius: 20,
-                }}>
-                <CustomText text={'View Profile'} style={{fontSize: 11}} />
+                }}
+              >
+                <CustomText text={"View Profile"} style={{ fontSize: 11 }} />
               </TouchableOpacity>
             </View>
           </View>
-          <View style={{backgroundColor: '#fff', height: 1.5, marginTop: 10}} />
+          <View
+            style={{ backgroundColor: "#fff", height: 1.5, marginTop: 10 }}
+          />
           <TouchableOpacity
             onPress={() => toggleRegisterModal()}
-            style={styles.menu_btn}>
+            style={styles.menu_btn}
+          >
             <CustomText
-              text={'Register Your Location'}
+              text={"Register Your Location"}
               style={styles.title_btn}
             />
             <Entypo
-              name={'chevron-small-right'}
+              name={"chevron-small-right"}
               size={30}
-              color={'#fff'}
+              color={"#fff"}
               style={{}}
             />
           </TouchableOpacity>
-          <View style={{backgroundColor: '#fff', height: 1.5, marginTop: 10}} />
+          <View
+            style={{ backgroundColor: "#fff", height: 1.5, marginTop: 10 }}
+          />
           <TouchableOpacity
             onPress={() => {
               togglePlaceYourAdd();
             }}
-            style={styles.menu_btn}>
-            <CustomText text={'Place Your Ad'} style={styles.title_btn} />
+            style={styles.menu_btn}
+          >
+            <CustomText text={"Place Your Ad"} style={styles.title_btn} />
             <Entypo
-              name={'chevron-small-right'}
+              name={"chevron-small-right"}
               size={30}
-              color={'#fff'}
+              color={"#fff"}
               style={{}}
             />
           </TouchableOpacity>
-          <View style={{backgroundColor: '#fff', height: 1.5, marginTop: 10}} />
+          <View
+            style={{ backgroundColor: "#fff", height: 1.5, marginTop: 10 }}
+          />
           <TouchableOpacity
             onPress={() => toggleModalSettings()}
-            style={styles.menu_btn}>
-            <CustomText text={'Settings'} style={styles.title_btn} />
+            style={styles.menu_btn}
+          >
+            <CustomText text={"Settings"} style={styles.title_btn} />
             <Entypo
-              name={'chevron-small-right'}
+              name={"chevron-small-right"}
               size={30}
-              color={'#fff'}
+              color={"#fff"}
               style={{}}
             />
           </TouchableOpacity>
-          <View style={{backgroundColor: '#fff', height: 1.5, marginTop: 10}} />
+          <View
+            style={{ backgroundColor: "#fff", height: 1.5, marginTop: 10 }}
+          />
           <TouchableOpacity style={styles.menu_btn}>
-            <CustomText text={'Help and Feedback'} style={styles.title_btn} />
+            <CustomText text={"Help and Feedback"} style={styles.title_btn} />
           </TouchableOpacity>
-          <View style={{backgroundColor: '#fff', height: 1.5, marginTop: 10}} />
-          <TouchableOpacity 
-          onPress={() => navigation.navigate('GoThrough')}
-          style={styles.menu_btn}>
-            <CustomText text={'Logout'} style={styles.title_btn} />
+          <View
+            style={{ backgroundColor: "#fff", height: 1.5, marginTop: 10 }}
+          />
+          <TouchableOpacity
+            onPress={() => {
+              dispatch(logOut());
+            }}
+            style={styles.menu_btn}
+          >
+            <CustomText text={"Logout"} style={styles.title_btn} />
           </TouchableOpacity>
         </View>
       </Modal>
@@ -292,56 +323,58 @@ const Home = ({navigation}) => {
         isVisible={isregisterModalVisible}
         style={styles.modal_Main_container}
         avoidKeyboard={false}
-        
-        >
-            <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
       >
-        <View style={styles.modal_container}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <CustomText
-              text={'Register Your Location'}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.modal_container}>
+            <View
               style={{
-                marginHorizontal: 20,
-                fontSize: 18,
-                fontWeight: 'bold',
-                marginTop: 18,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
+            >
+              <CustomText
+                text={"Register Your Location"}
+                style={{
+                  marginHorizontal: 20,
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  marginTop: 18,
+                }}
               />
-            <TouchableOpacity
-              style={styles.closebtn}
-              onPress={() => {
-                toggleRegisterModal();
-              }}>
-              <Ionicons name={'close'} size={30} color={'#fff'} style={{}} />
-            </TouchableOpacity>
-          </View>
-                <ScrollView>
-          <View
-            style={{
-              backgroundColor: '#1EF1F5',
-              height: 1.5,
-              marginTop: 20,
-            }}></View>
-          <View style={{marginHorizontal: 25, marginTop: 15}}>
-            <InputField placeholder={'Enter Your Business Location'} />
-            <InputField placeholder={'Business Name'} />
-            <InputField placeholder={'Your Phone Number'} />
-            <InputField placeholder={'Your Email Address'} />
+              <TouchableOpacity
+                style={styles.closebtn}
+                onPress={() => {
+                  toggleRegisterModal();
+                }}
+              >
+                <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView>
+              <View
+                style={{
+                  backgroundColor: "#1EF1F5",
+                  height: 1.5,
+                  marginTop: 20,
+                }}
+              ></View>
+              <View style={{ marginHorizontal: 25, marginTop: 15 }}>
+                <InputField placeholder={"Enter Your Business Location"} />
+                <InputField placeholder={"Business Name"} />
+                <InputField placeholder={"Your Phone Number"} />
+                <InputField placeholder={"Your Email Address"} />
 
-            <CustomButton
-              buttonText={'Continue'}
-              onPress={() => toggleThankYou()}
-            />
+                <CustomButton
+                  buttonText={"Continue"}
+                  onPress={() => toggleThankYou()}
+                />
+              </View>
+            </ScrollView>
           </View>
-          </ScrollView>
-        </View>
         </KeyboardAvoidingView>
       </Modal>
       {/* Place Your Ad.. */}
@@ -349,20 +382,22 @@ const Home = ({navigation}) => {
         animationIn="slideInLeft"
         animationOut="slideOutRight"
         isVisible={isplaceYourAddModal}
-        style={styles.modal_Main_container}>
+        style={styles.modal_Main_container}
+      >
         <View style={styles.modal_container}>
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <CustomText
-              text={'Place Your Ad..'}
+              text={"Place Your Ad.."}
               style={{
                 marginHorizontal: 20,
                 fontSize: 18,
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 marginTop: 18,
               }}
             />
@@ -370,31 +405,32 @@ const Home = ({navigation}) => {
               style={styles.closebtn}
               onPress={() => {
                 togglePlaceYourAdd();
-              }}>
-              <Ionicons name={'close'} size={30} color={'#fff'} style={{}} />
+              }}
+            >
+              <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
             </TouchableOpacity>
           </View>
           <View
             style={{
-              backgroundColor: '#1EF1F5',
+              backgroundColor: "#1EF1F5",
               height: 1.5,
               marginTop: 20,
-            }}></View>
-            <ScrollView>
+            }}
+          ></View>
+          <ScrollView>
+            <View style={{ marginHorizontal: 25, marginTop: 15 }}>
+              <InputField placeholder={"Enter Your Business Location"} />
+              <InputField placeholder={"Business Name"} />
+              <InputField placeholder={"Business Category"} />
+              <InputField placeholder={"Your Phone Number"} />
+              <InputField placeholder={"Your Email Address"} />
 
-           <View style={{marginHorizontal: 25, marginTop: 15}}>
-            <InputField placeholder={'Enter Your Business Location'} />
-            <InputField placeholder={'Business Name'} />
-            <InputField placeholder={'Business Category'} />
-            <InputField placeholder={'Your Phone Number'} />
-            <InputField placeholder={'Your Email Address'} />
-
-            <CustomButton
-              buttonText={'Select Package'}
-              onPress={() => toggleSelectPackage()}
-            />
-          </View>
-            </ScrollView>
+              <CustomButton
+                buttonText={"Select Package"}
+                onPress={() => toggleSelectPackage()}
+              />
+            </View>
+          </ScrollView>
         </View>
       </Modal>
       {/* Select package.. */}
@@ -402,20 +438,22 @@ const Home = ({navigation}) => {
         animationIn="slideInLeft"
         animationOut="slideOutRight"
         isVisible={isSelectPackageModal}
-        style={styles.modal_Main_container}>
+        style={styles.modal_Main_container}
+      >
         <View style={styles.modal_container}>
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <CustomText
-              text={'Select Package'}
+              text={"Select Package"}
               style={{
                 marginHorizontal: 20,
                 fontSize: 18,
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 marginTop: 18,
               }}
             />
@@ -423,91 +461,96 @@ const Home = ({navigation}) => {
               style={styles.closebtn}
               onPress={() => {
                 toggleSelectPackage();
-              }}>
-              <Ionicons name={'close'} size={30} color={'#fff'} style={{}} />
+              }}
+            >
+              <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
             </TouchableOpacity>
           </View>
           <View
             style={{
-              backgroundColor: '#1EF1F5',
+              backgroundColor: "#1EF1F5",
               height: 1.5,
               marginTop: 20,
-            }}></View>
-          <View style={{marginHorizontal: 25, marginTop: 15}}>
+            }}
+          ></View>
+          <View style={{ marginHorizontal: 25, marginTop: 15 }}>
             <TouchableOpacity
-              onPress={() => setChecked('first')}
+              onPress={() => setChecked("first")}
               style={[
                 styles.checkingView,
-                checked === 'first'
-                  ? {borderColor: COLORS.primary, borderWidth: 1.5}
+                checked === "first"
+                  ? { borderColor: COLORS.primary, borderWidth: 1.5 }
                   : null,
-              ]}>
+              ]}
+            >
               <RadioButton
                 value="first"
                 color={COLORS.primary}
                 uncheckedColor="#fff"
-                status={checked === 'first' ? 'checked' : 'unchecked'}
+                status={checked === "first" ? "checked" : "unchecked"}
                 style={styles.radiobtn}
-                onPress={() => setChecked('first')}
+                onPress={() => setChecked("first")}
               />
-              <View style={{marginHorizontal: 15}}>
+              <View style={{ marginHorizontal: 15 }}>
                 <CustomText
-                  text={'$119.99/Yearly'}
-                  style={{fontSize: 18, fontWeight: 'bold'}}
+                  text={"$119.99/Yearly"}
+                  style={{ fontSize: 18, fontWeight: "bold" }}
                 />
-                <CustomText text={'$9.99/Month billed annually '} />
+                <CustomText text={"$9.99/Month billed annually "} />
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setChecked('second')}
+              onPress={() => setChecked("second")}
               style={[
                 styles.checkingView,
-                checked === 'second'
-                  ? {borderColor: COLORS.primary, borderWidth: 1.5}
+                checked === "second"
+                  ? { borderColor: COLORS.primary, borderWidth: 1.5 }
                   : null,
-              ]}>
+              ]}
+            >
               <RadioButton
                 value="second"
                 color={COLORS.primary}
                 uncheckedColor="#fff"
-                status={checked === 'second' ? 'checked' : 'unchecked'}
+                status={checked === "second" ? "checked" : "unchecked"}
                 style={styles.radiobtn}
-                onPress={() => setChecked('second')}
+                onPress={() => setChecked("second")}
               />
-              <View style={{marginHorizontal: 15}}>
+              <View style={{ marginHorizontal: 15 }}>
                 <CustomText
-                  text={'$50.99/Monthly'}
-                  style={{fontSize: 18, fontWeight: 'bold'}}
+                  text={"$50.99/Monthly"}
+                  style={{ fontSize: 18, fontWeight: "bold" }}
                 />
-                <CustomText text={'$50.99/ billed for 1 month'} />
+                <CustomText text={"$50.99/ billed for 1 month"} />
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setChecked('third')}
+              onPress={() => setChecked("third")}
               style={[
                 styles.checkingView,
-                checked === 'third'
-                  ? {borderColor: COLORS.primary, borderWidth: 1.5}
+                checked === "third"
+                  ? { borderColor: COLORS.primary, borderWidth: 1.5 }
                   : null,
-              ]}>
+              ]}
+            >
               <RadioButton
                 value="third"
                 color={COLORS.primary}
                 uncheckedColor="#fff"
-                status={checked === 'third' ? 'checked' : 'unchecked'}
+                status={checked === "third" ? "checked" : "unchecked"}
                 style={styles.radiobtn}
-                onPress={() => setChecked('third')}
+                onPress={() => setChecked("third")}
               />
-              <View style={{marginHorizontal: 15}}>
+              <View style={{ marginHorizontal: 15 }}>
                 <CustomText
-                  text={'$15.99/weekly'}
-                  style={{fontSize: 18, fontWeight: 'bold'}}
+                  text={"$15.99/weekly"}
+                  style={{ fontSize: 18, fontWeight: "bold" }}
                 />
-                <CustomText text={'$15.99/ billed for 1 week'} />
+                <CustomText text={"$15.99/ billed for 1 week"} />
               </View>
             </TouchableOpacity>
             <CustomButton
-              buttonText={'Continue'}
+              buttonText={"Continue"}
               onPress={() => toggleMakePayment()}
             />
           </View>
@@ -519,21 +562,24 @@ const Home = ({navigation}) => {
         animationOut="slideOutRight"
         isVisible={isPaymentModalVisible}
         style={{
-          width: '100%',
-          margin: 0,}}>
+          width: "100%",
+          margin: 0,
+        }}
+      >
         <View style={styles.modal_container}>
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <CustomText
-              text={'Make Your Payment'}
+              text={"Make Your Payment"}
               style={{
                 marginHorizontal: 20,
                 fontSize: 18,
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 marginTop: 18,
               }}
             />
@@ -541,46 +587,61 @@ const Home = ({navigation}) => {
               style={styles.closebtn}
               onPress={() => {
                 toggleMakePayment();
-              }}>
-              <Ionicons name={'close'} size={30} color={'#fff'} style={{}} />
+              }}
+            >
+              <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
             </TouchableOpacity>
           </View>
           <View style={styles.cardView}>
             <View
               style={{
-                flexDirection: 'row',
+                flexDirection: "row",
                 marginTop: 15,
-                justifyContent: 'space-around',
-              }}>
-              <CustomText text={'Current credit card'} style={{fontSize: 12}} />
-              <CustomText text={'Add new credit card'} style={{fontSize: 12}} />
+                justifyContent: "space-around",
+              }}
+            >
+              <CustomText
+                text={"Current credit card"}
+                style={{ fontSize: 12 }}
+              />
+              <CustomText
+                text={"Add new credit card"}
+                style={{ fontSize: 12 }}
+              />
             </View>
             <View
               style={{
-                flexDirection: 'row',
+                flexDirection: "row",
                 paddingHorizontal: 10,
-                justifyContent: 'space-between',
+                justifyContent: "space-between",
                 marginTop: 10,
-              }}>
+              }}
+            >
               <View
                 style={{
                   height: 90,
-                  width: wp('33%'),
+                  width: wp("33%"),
                   borderWidth: 1,
-                  borderColor: 'white',
+                  borderColor: "white",
                   borderRadius: 10,
                   padding: 10,
-                }}>
+                }}
+              >
                 {/* <FontAwesome name={'cc-visa'} size={20} color={'white'} /> */}
 
-                <Fontisto name={'visa'} size={20} color={'#fff'} style={{}} />
+                <Fontisto name={"visa"} size={20} color={"#fff"} style={{}} />
 
                 <Text
-                  style={{fontSize: hp('1.6%'), color: 'white', marginTop: 12}}>
+                  style={{
+                    fontSize: hp("1.6%"),
+                    color: "white",
+                    marginTop: 12,
+                  }}
+                >
                   •••• •••• •••• 3294
                 </Text>
 
-                <Text style={{fontSize: hp('1.3%'), color: 'white'}}>
+                <Text style={{ fontSize: hp("1.3%"), color: "white" }}>
                   Howard Pinsky
                 </Text>
               </View>
@@ -588,32 +649,37 @@ const Home = ({navigation}) => {
                 <View
                   style={{
                     height: 90,
-                    width: wp('33%'),
+                    width: wp("33%"),
                     borderWidth: 1,
-                    borderColor: 'white',
+                    borderColor: "white",
                     borderRadius: 10,
                     padding: 10,
-                    backgroundColor: 'white',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
+                    backgroundColor: "white",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <View
                     style={{
                       height: 20,
                       width: 20,
-                      backgroundColor: '#611885',
+                      backgroundColor: "#611885",
                       borderRadius: 200,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                    <Text style={{fontWeight: 'bold', color: 'white'}}>+</Text>
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontWeight: "bold", color: "white" }}>
+                      +
+                    </Text>
                   </View>
                 </View>
               </TouchableOpacity>
             </View>
-            <View style={{marginHorizontal: 10}}>
+            <View style={{ marginHorizontal: 10 }}>
               <Text
-                style={{color: 'white', fontSize: hp('1.3%'), marginTop: 15}}>
+                style={{ color: "white", fontSize: hp("1.3%"), marginTop: 15 }}
+              >
                 Name of card holder
               </Text>
 
@@ -621,81 +687,86 @@ const Home = ({navigation}) => {
                 placeholder="Howard Pinsky"
                 style={{
                   borderWidth: 2,
-                  borderColor: 'white',
+                  borderColor: "white",
                   borderRadius: 20,
-                  color: 'white',
+                  color: "white",
                   paddingHorizontal: 20,
                   marginTop: 10,
-                  backgroundColor: '#A2A2A2',
+                  backgroundColor: "#A2A2A2",
                   opacity: 0.8,
                 }}
-                placeholderTextColor={'white'}
+                placeholderTextColor={"white"}
               />
 
               <Text
-                style={{color: 'white', fontSize: hp('1.3%'), marginTop: 15}}>
+                style={{ color: "white", fontSize: hp("1.3%"), marginTop: 15 }}
+              >
                 Credit card number
               </Text>
               <TextInput
                 placeholder="1234   3924   2394   3294"
                 style={{
                   borderWidth: 2,
-                  borderColor: 'white',
+                  borderColor: "white",
                   borderRadius: 20,
-                  color: 'white',
+                  color: "white",
                   paddingHorizontal: 20,
                   marginTop: 10,
-                  backgroundColor: '#376CE3',
+                  backgroundColor: "#376CE3",
                 }}
-                placeholderTextColor={'white'}
+                placeholderTextColor={"white"}
               />
 
               <View
-                style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
                 <View>
-                  <Text style={{color: 'white', marginTop: 10, fontSize: 12}}>
+                  <Text style={{ color: "white", marginTop: 10, fontSize: 12 }}>
                     Expiration
                   </Text>
                   <TextInput
                     placeholder="02/25"
-                    placeholderTextColor={'white'}
+                    placeholderTextColor={"white"}
                     style={{
                       borderWidth: 1,
-                      borderColor: '#A2A2A2',
+                      borderColor: "#A2A2A2",
                       borderRadius: 10,
-                      width: wp('35%'),
+                      width: wp("35%"),
                       height: 40,
                       paddingHorizontal: 10,
                       marginTop: 10,
-                      color: 'white',
+                      color: "white",
                     }}
                   />
                 </View>
 
                 <View>
-                  <Text style={{color: 'white', marginTop: 10, fontSize: 12}}>
+                  <Text style={{ color: "white", marginTop: 10, fontSize: 12 }}>
                     CVV
                   </Text>
                   <TextInput
                     placeholder="231"
-                    placeholderTextColor={'white'}
+                    placeholderTextColor={"white"}
                     style={{
                       borderWidth: 1,
-                      borderColor: '#A2A2A2',
+                      borderColor: "#A2A2A2",
                       borderRadius: 10,
-                      width: wp('35%'),
+                      width: wp("35%"),
                       height: 40,
                       paddingHorizontal: 10,
                       marginTop: 10,
-                      color: 'white',
+                      color: "white",
                     }}
                   />
                 </View>
               </View>
             </View>
             <CustomButton
-              style={{top: 20}}
-              buttonText={'Make Payment'}
+              style={{ top: 20 }}
+              buttonText={"Make Payment"}
               onPress={() => toggleConfirm()}
             />
           </View>
@@ -706,30 +777,31 @@ const Home = ({navigation}) => {
         animationIn="slideInLeft"
         animationOut="slideOutRight"
         isVisible={isThanksModalVisible}
-        style={{flex: 0.9,
-          width: '100%',
-          margin: 0,}}>
+        style={{ flex: 0.9, width: "100%", margin: 0 }}
+      >
         <View
           style={{
-            backgroundColor: 'rgba(220, 220, 204, 0.8)',
+            backgroundColor: "rgba(220, 220, 204, 0.8)",
             flex: 0.5,
             opacity: 0.8,
-            width: '100%',
-            borderColor: '#1EF1F5',
+            width: "100%",
+            borderColor: "#1EF1F5",
             borderWidth: 1.2,
             marginTop: 20,
-          }}>
+          }}
+        >
           <TouchableOpacity
-            style={[styles.closebtn, {alignSelf: 'flex-end'}]}
+            style={[styles.closebtn, { alignSelf: "flex-end" }]}
             onPress={() => {
               toggleThankYou();
-            }}>
-            <Ionicons name={'close'} size={30} color={'#fff'} style={{}} />
+            }}
+          >
+            <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
           </TouchableOpacity>
 
           <View style={styles.thankYouView}>
             <CustomText
-              text={'Thank You For Using \n        Our Service'}
+              text={"Thank You For Using \n        Our Service"}
               style={styles.thankYouView}
             />
             <Lottie
@@ -749,29 +821,32 @@ const Home = ({navigation}) => {
         animationIn="slideInLeft"
         animationOut="slideOutRight"
         isVisible={isConfirmModalVisible}
-        style={styles.modal_Main_container}>
+        style={styles.modal_Main_container}
+      >
         <View
           style={{
-            backgroundColor: 'rgba(220, 220, 204, 0.8)',
+            backgroundColor: "rgba(220, 220, 204, 0.8)",
             flex: 0.5,
             opacity: 0.8,
-            width: '100%',
-            borderColor: '#1EF1F5',
+            width: "100%",
+            borderColor: "#1EF1F5",
             borderWidth: 1.2,
             marginTop: 20,
-          }}>
+          }}
+        >
           <TouchableOpacity
-            style={[styles.closebtn, {alignSelf: 'flex-end'}]}
+            style={[styles.closebtn, { alignSelf: "flex-end" }]}
             onPress={() => {
               toggleConfirm();
-            }}>
-            <Ionicons name={'close'} size={30} color={'#fff'} style={{}} />
+            }}
+          >
+            <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
           </TouchableOpacity>
 
           <View style={styles.thankYouView}>
             <CustomText
               text={
-                ' Your Ad are placed \n after 24 hours will confirm \n you through Email..'
+                " Your Ad are placed \n after 24 hours will confirm \n you through Email.."
               }
               style={styles.thankYouView}
             />
@@ -792,22 +867,22 @@ const Home = ({navigation}) => {
         animationIn="slideInLeft"
         animationOut="slideOutRight"
         isVisible={isSettingsModalVisible}
-        style={{flex: 1,
-          width: '100%',
-          margin: 0,}}>
+        style={{ flex: 1, width: "100%", margin: 0 }}
+      >
         <View style={styles.modal_container}>
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <CustomText
-              text={'Settings'}
+              text={"Settings"}
               style={{
                 marginHorizontal: 20,
                 fontSize: 20,
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 marginTop: 18,
               }}
             />
@@ -815,165 +890,172 @@ const Home = ({navigation}) => {
               style={styles.closebtn}
               onPress={() => {
                 toggleModalSettings();
-              }}>
-              <Ionicons name={'close'} size={30} color={'#fff'} style={{}} />
+              }}
+            >
+              <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
             </TouchableOpacity>
           </View>
           <View
             style={{
-              backgroundColor: '#1EF1F5',
+              backgroundColor: "#1EF1F5",
               height: 1.5,
               marginTop: 20,
             }}
           />
-          <ScrollView style={{ top:5}}>
+          <ScrollView style={{ top: 5 }}>
             <View
               style={{
-                backgroundColor: '#CFCFCF',
+                backgroundColor: "#CFCFCF",
                 marginHorizontal: 20,
                 marginTop: 20,
                 borderRadius: 10,
-              }}>
+              }}
+            >
               <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={'General'} style={styles.title_btn} />
+                <CustomText text={"General"} style={styles.title_btn} />
                 <Entypo
-                  name={'chevron-small-right'}
+                  name={"chevron-small-right"}
                   size={30}
-                  color={'#fff'}
+                  color={"#fff"}
                   style={{}}
                 />
               </TouchableOpacity>
               <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={'Map Display'} style={styles.title_btn} />
+                <CustomText text={"Map Display"} style={styles.title_btn} />
                 <Entypo
-                  name={'chevron-small-right'}
+                  name={"chevron-small-right"}
                   size={30}
-                  color={'#fff'}
+                  color={"#fff"}
                   style={{}}
                 />
               </TouchableOpacity>
               <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={'Voice and Sound'} style={styles.title_btn} />
+                <CustomText text={"Voice and Sound"} style={styles.title_btn} />
                 <Entypo
-                  name={'chevron-small-right'}
+                  name={"chevron-small-right"}
                   size={30}
-                  color={'#fff'}
+                  color={"#fff"}
                   style={{}}
                 />
               </TouchableOpacity>
             </View>
             <CustomText
-              text={'Driving preference'}
+              text={"Driving preference"}
               style={{
                 fontSize: 18,
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 marginHorizontal: 20,
                 marginTop: 10,
               }}
             />
             <View
               style={{
-                backgroundColor: '#CFCFCF',
+                backgroundColor: "#CFCFCF",
                 marginHorizontal: 20,
                 marginTop: 20,
                 borderRadius: 10,
-              }}>
+              }}
+            >
               <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={'Navigation'} style={styles.title_btn} />
+                <CustomText text={"Navigation"} style={styles.title_btn} />
                 <Entypo
-                  name={'chevron-small-right'}
+                  name={"chevron-small-right"}
                   size={30}
-                  color={'#fff'}
+                  color={"#fff"}
                   style={{}}
                 />
               </TouchableOpacity>
               <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={'Vehicle Details'} style={styles.title_btn} />
+                <CustomText text={"Vehicle Details"} style={styles.title_btn} />
                 <Entypo
-                  name={'chevron-small-right'}
+                  name={"chevron-small-right"}
                   size={30}
-                  color={'#fff'}
+                  color={"#fff"}
                   style={{}}
                 />
               </TouchableOpacity>
               <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={'Alert and reports'} style={styles.title_btn} />
+                <CustomText
+                  text={"Alert and reports"}
+                  style={styles.title_btn}
+                />
                 <Entypo
-                  name={'chevron-small-right'}
+                  name={"chevron-small-right"}
                   size={30}
-                  color={'#fff'}
+                  color={"#fff"}
                   style={{}}
                 />
               </TouchableOpacity>
               <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={'Gas stations'} style={styles.title_btn} />
+                <CustomText text={"Gas stations"} style={styles.title_btn} />
                 <Entypo
-                  name={'chevron-small-right'}
+                  name={"chevron-small-right"}
                   size={30}
-                  color={'#fff'}
+                  color={"#fff"}
                   style={{}}
                 />
               </TouchableOpacity>
               <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={'Speedometer'} style={styles.title_btn} />
+                <CustomText text={"Speedometer"} style={styles.title_btn} />
                 <Entypo
-                  name={'chevron-small-right'}
+                  name={"chevron-small-right"}
                   size={30}
-                  color={'#fff'}
+                  color={"#fff"}
                   style={{}}
                 />
               </TouchableOpacity>
               <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={'Audio player'} style={styles.title_btn} />
+                <CustomText text={"Audio player"} style={styles.title_btn} />
                 <Entypo
-                  name={'chevron-small-right'}
+                  name={"chevron-small-right"}
                   size={30}
-                  color={'#fff'}
+                  color={"#fff"}
                   style={{}}
                 />
               </TouchableOpacity>
             </View>
             <CustomText
-              text={'Notifications'}
+              text={"Notifications"}
               style={{
                 fontSize: 18,
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 marginHorizontal: 20,
                 marginTop: 10,
               }}
             />
             <View
               style={{
-                backgroundColor: '#CFCFCF',
+                backgroundColor: "#CFCFCF",
                 marginHorizontal: 20,
                 marginTop: 20,
                 borderRadius: 10,
-                bottom:15
-              }}>
+                bottom: 15,
+              }}
+            >
               <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={'Notifications'} style={styles.title_btn} />
+                <CustomText text={"Notifications"} style={styles.title_btn} />
                 <Entypo
-                  name={'chevron-small-right'}
+                  name={"chevron-small-right"}
                   size={30}
-                  color={'#fff'}
+                  color={"#fff"}
                   style={{}}
                 />
               </TouchableOpacity>
               <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={'Planned drives'} style={styles.title_btn} />
+                <CustomText text={"Planned drives"} style={styles.title_btn} />
                 <Entypo
-                  name={'chevron-small-right'}
+                  name={"chevron-small-right"}
                   size={30}
-                  color={'#fff'}
+                  color={"#fff"}
                   style={{}}
                 />
               </TouchableOpacity>
               <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={'Reminders'} style={styles.title_btn} />
+                <CustomText text={"Reminders"} style={styles.title_btn} />
                 <Entypo
-                  name={'chevron-small-right'}
+                  name={"chevron-small-right"}
                   size={30}
-                  color={'#fff'}
+                  color={"#fff"}
                   style={{}}
                 />
               </TouchableOpacity>
@@ -981,8 +1063,6 @@ const Home = ({navigation}) => {
           </ScrollView>
         </View>
       </Modal>
-
-      
     </View>
   );
 };
