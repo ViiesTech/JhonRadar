@@ -8,7 +8,13 @@ import {
   ScrollView,
   KeyboardAvoidingView,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  // useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import Modal from "react-native-modal";
 import { Marker } from "react-native-maps";
@@ -22,17 +28,18 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Entypo from "react-native-vector-icons/Entypo";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Fontisto from "react-native-vector-icons/Fontisto";
-
 import images from "../../Constants/images";
 import { RadioButton } from "react-native-paper";
 import { COLORS } from "../../Constants/theme";
-
 import Lottie from "lottie-react-native";
 import CustomText from "../../Components/Text";
 import InputField from "../../Components/InputFiled";
 import CustomButton from "../../Components/Button";
 import { useDispatch } from "react-redux";
 import { logOut } from "../../Redux/authSlice";
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
+import MapViewDirections from "react-native-maps-directions";
 
 const Home = ({ navigation }) => {
   const [isModalVisible, setModalVisible] = useState(false);
@@ -43,25 +50,110 @@ const Home = ({ navigation }) => {
   const [isThanksModalVisible, setThanksModalVisible] = useState(false);
   const [isConfirmModalVisible, setConfirmModalVisible] = useState(false);
   const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
-
+  const [isSelectDistinationVisible, setSelectDistinationVisible] = useState(
+    false
+  );
   const [checked, setChecked] = useState();
-  const dispatch = useDispatch();
+  const [startLocation, setStartLocation] = useState(null);
+  const [endLocation, setEndLocation] = useState(null);
+  const [myLocation, setMyLocation] = useState(region);
 
-  const [position, setPosition] = useState({
+  const handleDirectionsReady = (result) => {
+    result?.coordinates;
+  };
+
+  const handleStartLocationSelect = (data, details) => {
+    // Handle start location selection from autocomplete
+    const coordinate = {
+      latitude: details.geometry.location.lat,
+      longitude: details.geometry.location.lng,
+    };
+
+    setStartLocation({ name: data.description, coordinate });
+  };
+
+  const handleEndLocationSelect = (data, details) => {
+    // Handle end location selection from autocomplete
+    const coordinate = {
+      latitude: details.geometry.location.lat,
+      longitude: details.geometry.location.lng,
+    };
+    setEndLocation({ name: data.description, coordinate });
+  };
+
+  const animateToRegion = (coordinate) => {
+    // Animate the map to focus on a specific coordinate
+    mapRef.current.animateToRegion(
+      {
+        ...coordinate,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      },
+      1000
+    );
+  };
+
+  const [region, setRegion] = useState({
     latitude: 43.0,
     longitude: -75.0,
-    latitudeDelta: 10.5555,
-    longitudeDelta: 10.5575,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
   });
+  const mapRef = useRef(null);
+  const dispatch = useDispatch();
+
+  // Function to handle place selection
 
   useEffect(() => {
+    // Request location permission
+    Geolocation.requestAuthorization();
+
+    // Set up location tracking (update every 1000 milliseconds or 1 second)
+    Geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position?.coords;
+        setMyLocation({
+          latitude,
+          longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        });
+      },
+      (error) => console.log(error),
+      {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 1000,
+        distanceFilter: 10,
+      }
+    );
+
+    // Clean up the location tracking when the component is unmounted
+    // return () => {
+    //   Geolocation.clearWatch(locationWatchId);
+    // };
+  }, []);
+  console.log("my location ?????????????????", myLocation);
+  const handleMapPress = (event) => {
+    const { coordinate } = event.nativeEvent;
+    // Check if startLocation is already set, if not, set it
+    if (!startLocation) {
+      setStartLocation({ coordinate });
+    } else {
+      // If startLocation is set, set endLocation
+      setEndLocation({ coordinate });
+    }
+  };
+
+  useEffect(() => {
+    // renderCoords();
     Geolocation.getCurrentPosition((pos) => {
       const crd = pos.coords;
-      setPosition({
+      setRegion({
         latitude: crd.latitude,
         longitude: crd.longitude,
-        latitudeDelta: 10.005,
-        longitudeDelta: 10.005,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
       });
     });
   }, []);
@@ -112,7 +204,9 @@ const Home = ({ navigation }) => {
     setSettingsModalVisible(!isSettingsModalVisible);
     setModalVisible(false);
   };
-
+  const toggleDistinationModal = () => {
+    setSelectDistinationVisible(!isSelectDistinationVisible);
+  };
   const nearByData = [
     {
       id: 1,
@@ -140,6 +234,12 @@ const Home = ({ navigation }) => {
     },
   ];
 
+  // ref
+  const bottomSheetRef = useRef(null);
+
+  // variables
+  const snapPoints = useMemo(() => ["12%", "45%"], []);
+
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.menuBtn}>
@@ -151,65 +251,164 @@ const Home = ({ navigation }) => {
         </TouchableOpacity>
       </View>
       <MapView
+        ref={mapRef}
         style={styles.map}
-        initialRegion={position}
-        showsUserLocation={true}
+        initialRegion={region}
+        // showsUserLocation={true}
         showsMyLocationButton={true}
         followsUserLocation={true}
-        showsCompass={true}
+        // showsCompass={true}
         scrollEnabled={true}
         zoomEnabled={true}
         pitchEnabled={true}
         rotateEnabled={true}
+        userLocationAnnotationTitle="My Locations"
+        region={region}
+        onRegionChangeComplete={(resp) => setRegion(resp)}
       >
-        <Marker
-          title="Yor are here"
-          description="This is a description"
-          coordinate={position}
-        />
-      </MapView>
-      {/* <View style={styles.container}></View> */}
-      <View style={styles.backcard}>
-        <View style={styles.bottom_view}>
-          <MaterialIcons
-            name={"location-pin"}
-            size={25}
-            color={"#fff"}
-            style={{ marginTop: 10 }}
+        {myLocation ? (
+          <Marker title="My Location " coordinate={myLocation}>
+            <View style={{ width: 50, height: 80 }}>
+              <Image
+                source={images.carMarker} // Your marker image source
+                style={{
+                  flex: 1,
+                  width: null,
+                  height: null,
+                  resizeMode: "contain",
+                }}
+              />
+            </View>
+          </Marker>
+        ) : null}
+        {startLocation ? (
+          <Marker
+            title="Selected Location"
+            coordinate={startLocation?.coordinate}
+          >
+            <View style={{ width: 50, height: 50 }}>
+              <Image
+                source={images.markerImage} // Your marker image source
+                style={{
+                  flex: 1,
+                  width: null,
+                  height: null,
+                  resizeMode: "contain",
+                }}
+              />
+            </View>
+          </Marker>
+        ) : null}
+        {endLocation ? (
+          <Marker title="End Location" coordinate={endLocation?.coordinate} />
+        ) : null}
+        {startLocation && endLocation ? (
+          <MapViewDirections
+            origin={startLocation?.coordinate}
+            destination={endLocation?.coordinate}
+            apikey={"AIzaSyCxPKJMEW5ko5BoDLW5F3K4bzs-faQaHU8"}
+            strokeWidth={6}
+            strokeColor="green"
+            onReady={handleDirectionsReady}
+            //  zIndex={0}
           />
+        ) : null}
+      </MapView>
 
-          <TextInput
-            placeholder="Search Here..."
-            placeholderTextColor={"white"}
-            style={{ color: "white" }}
-          ></TextInput>
-          <MaterialIcons
-            name={"search"}
-            size={25}
-            color={"#fff"}
-            style={{ marginTop: 10 }}
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={1}
+        snapPoints={snapPoints}
+        backgroundStyle={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+        // onChange={handleSheetChanges}
+      >
+        <View style={styles.contentContainer}>
+          <View style={{ flexDirection: "row" }}>
+            <MaterialIcons
+              name={"location-pin"}
+              size={25}
+              color={"#fff"}
+              style={{ marginTop: 10 }}
+            />
+
+            <GooglePlacesAutocomplete
+              placeholder="Search here..."
+              onPress={(data, details = null) => {
+                console.log("Selected Place Data:", data);
+                console.log("Selected Place details:", details);
+                let chosenRegion = {
+                  longitude: details.geometry.location.lng,
+                  latitude: details.geometry.location.lat,
+                  latitudeDelta: 0.005,
+                  longitudeDelta: 0.005,
+                };
+                setRegion(chosenRegion);
+                mapRef.current.animateToRegion(chosenRegion, 1000);
+              }}
+              textInputProps={{
+                placeholderTextColor: "#fff",
+              }}
+              fetchDetails={true}
+              query={{
+                key: "AIzaSyCxPKJMEW5ko5BoDLW5F3K4bzs-faQaHU8",
+                language: "en",
+              }}
+              autoFillOnNotFound={true}
+              styles={{
+                container: {
+                  // borderColor: "black",
+                  // backgroundColor:'red'
+                },
+                textInputContainer: {
+                  // backgroundColor: "#73737E",
+                },
+                textInput: {
+                  height: 48,
+                  fontSize: 16,
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  color: "white",
+                },
+                predefinedPlacesDescription: {},
+              }}
+            />
+
+            <MaterialIcons
+              name={"search"}
+              size={25}
+              color={"#fff"}
+              style={{ marginTop: 10 }}
+            />
+          </View>
+          <CustomButton
+            buttonText={"select your pick and drop"}
+            style={styles.selectYourPickAndDrop}
+            // lllllllllllllllllllllllllllllllllllllllllllll
+            onPress={() => toggleDistinationModal()}
+          />
+          <BottomSheetFlatList
+            showsHorizontalScrollIndicator={false}
+            horizontal
+            data={nearByData}
+            renderItem={({ item }) => {
+              return (
+                <View style={styles.flatlist_container}>
+                  <TouchableOpacity style={styles.nearByData_View}>
+                    <MaterialIcons
+                      name={item.iconName}
+                      size={18}
+                      color="white"
+                    />
+                    <CustomText
+                      text={item.title}
+                      style={{ marginHorizontal: 6, fontSize: 16 }}
+                    />
+                  </TouchableOpacity>
+                </View>
+              );
+            }}
           />
         </View>
-        <FlatList
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={nearByData}
-          renderItem={({ item }) => {
-            return (
-              <View style={styles.flatlist_container}>
-                <TouchableOpacity style={styles.nearByData_View}>
-                  <MaterialIcons name={item.iconName} size={18} color="white" />
-                  <CustomText
-                    text={item.title}
-                    style={{ marginHorizontal: 6, fontSize: 16 }}
-                  />
-                </TouchableOpacity>
-              </View>
-            );
-          }}
-        />
-        <View style={{ height: 40 }} />
-      </View>
+      </BottomSheet>
       {/* menu modal */}
       <Modal
         animationIn="slideInLeft"
@@ -1061,6 +1260,138 @@ const Home = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </ScrollView>
+        </View>
+      </Modal>
+      {/* select your distination  */}
+      <Modal
+        // animationIn="bounceInUp"
+        // animationOut="bounceInDown"
+        isVisible={isSelectDistinationVisible}
+        style={styles.modal_Main_container}
+      >
+        <View
+          style={{
+            backgroundColor: "rgba(220, 220, 204, 10)",
+            flex: 0.7,
+            width: "100%",
+            borderColor: "#1EF1F5",
+            borderWidth: 1.2,
+            marginTop: 20,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              marginTop: 20,
+            }}
+          >
+            <GooglePlacesAutocomplete
+              placeholder="PickUp Location here..."
+              onPress={(data, details = null) => {
+                handleStartLocationSelect(data, details);
+                animateToRegion(details.geometry.location);
+                // setStartLocation(data);
+                // setRegion(chosenRegion);
+                // mapRef.current.animateToRegion(chosenRegion, 1000);
+              }}
+              textInputProps={{
+                placeholderTextColor: "#fff",
+              }}
+              fetchDetails={true}
+              query={{
+                key: "AIzaSyCxPKJMEW5ko5BoDLW5F3K4bzs-faQaHU8",
+                language: "en",
+              }}
+              autoFillOnNotFound={true}
+              styles={{
+                container: {
+                  // borderColor: "black",
+                  // backgroundColor:'red'
+                },
+                textInputContainer: {
+                  width: "90%",
+                  alignSelf: "center",
+                  height: 50,
+                  borderColor: "black",
+                  borderWidth: 1,
+                  borderRadius: 10,
+                },
+                textInput: {
+                  height: 48,
+                  fontSize: 16,
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  color: "white",
+                },
+                predefinedPlacesDescription: {},
+              }}
+            />
+          </View>
+
+          <View
+            style={{
+              flexDirection: "row",
+              alignContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <GooglePlacesAutocomplete
+              placeholder="Drop Off Location here..."
+              onPress={(data, details = null) => {
+                // console.log("Selected Place Data:", data);
+                let chosenRegion = {
+                  longitude: details.geometry.location.lng,
+                  latitude: details.geometry.location.lat,
+                  latitudeDelta: 0.005,
+                  longitudeDelta: 0.005,
+                };
+
+                handleEndLocationSelect(data, details);
+                animateToRegion(details.geometry.location);
+                // setRegion(chosenRegion);
+                // setEndLocation(data);
+                // mapRef.current.animateToRegion(chosenRegion, 1000);
+              }}
+              fetchDetails={true}
+              query={{
+                key: "AIzaSyCxPKJMEW5ko5BoDLW5F3K4bzs-faQaHU8",
+                language: "en",
+              }}
+              textInputProps={{
+                placeholderTextColor: "#fff",
+              }}
+              autoFillOnNotFound={true}
+              styles={{
+                container: {},
+                textInputContainer: {
+                  width: "90%",
+                  alignSelf: "center",
+                  height: 50,
+                  borderColor: "black",
+                  borderWidth: 1,
+                  borderRadius: 10,
+                  marginTop: 15,
+                },
+                textInput: {
+                  height: 48,
+                  fontSize: 16,
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  color: "white",
+                },
+                predefinedPlacesDescription: {
+                  backgroundColor: "red",
+                },
+              }}
+            />
+          </View>
+          <View style={{ flex: 1, justifyContent: "flex-end" }}>
+            <CustomButton
+              buttonText={"Submit"}
+              style={styles.selectYourPickAndDrop}
+              onPress={() => {
+                toggleDistinationModal();
+              }}
+            />
+          </View>
         </View>
       </Modal>
     </View>

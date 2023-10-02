@@ -11,7 +11,6 @@ const initialState = {
 export const UserLogin = createAsyncThunk("user", async (config) => {
   return axios(config)
     .then((response) => {
-      // console.log("response=====>>>>>>", response.authData);
       if (response.data.success === false) {
         showToast("error", response.data.message);
       }
@@ -19,7 +18,7 @@ export const UserLogin = createAsyncThunk("user", async (config) => {
     })
     .catch(function (error) {
       showToast("error", error.data.message);
-      // console.log(error);
+      console.log(error);
     });
 });
 const showToast = (type, msg) => {
@@ -36,9 +35,7 @@ const authSlice = createSlice({
     SignIn: (state, action) => {
       state.user = action.payload;
     },
-    setToken: (state, action) => {
-      state.token = action.payload;
-    },
+
     logOut: (state) => {
       state.token = "";
       state.user = [];
@@ -49,7 +46,7 @@ const authSlice = createSlice({
       state.isLoading = true;
     });
     builder.addCase(UserLogin.fulfilled, (state, action) => {
-      console.log("Response =============>>>>>>>>>>",action.payload)
+      console.log("Response =============>>>>>>>>>>", action.payload);
       state.isLoading = false;
       state.user = action.payload.data;
       state.token = action.payload.token;
