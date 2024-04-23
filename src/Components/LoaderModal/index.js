@@ -2,7 +2,7 @@ import { View, ActivityIndicator, Modal } from "react-native";
 import React from "react";
 import { styles } from "./index.style";
 // import { COLORS } from "../../utils/COLORS";
-import { Fold } from "react-native-animated-spinkit";
+import { Fold } from "react-native-animated-spinkit"; 
 import { COLORS } from "../../Constants/theme";
 
 const LoaderModal = ({ visible, style, color, size }) => {

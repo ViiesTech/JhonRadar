@@ -12,7 +12,6 @@ import {
   isLastFilledCell,
 } from "react-native-confirmation-code-field";
 import images from "../../Constants/images";
-
 import BackButton from "../../Components/Back Button";
 import FastImage from "react-native-fast-image";
 import Toast from "react-native-toast-message";
@@ -72,7 +71,6 @@ const Otp = ({ navigation, route }) => {
     }
   }, [count]);
 
-  //api
   const CheckingOtp = () => {
     setIsLoader(true);
     let data = JSON.stringify({
@@ -123,10 +121,6 @@ const Otp = ({ navigation, route }) => {
     <FastImage source={images.AuthBackground} style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
         <BackButton onPressBack={() => navigation.goBack()} />
-        {/* <Image
-          source={images.logo}
-          style={{ height: 70, width: 70, alignSelf: "center", marginTop: 30 }}
-        /> */}
 
         <ScrollView
           contentContainerStyle={{
@@ -185,15 +179,7 @@ const Otp = ({ navigation, route }) => {
 
           <View>
             <Modal isVisible={isModalVisible}>
-              {/* <FastImage
-                source={images.Background}
-                style={{ flex: 0.6, alignItems: "center" }}
-              >
-                {/* <View
-                style={{
-                  flex: 0.6,
-                  backgroundColor: '#E61917',
-                }}> */}
+
               <Lottie
                 source={images.tickLottie}
                 autoPlay

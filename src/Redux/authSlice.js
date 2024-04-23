@@ -8,6 +8,14 @@ const initialState = {
   isLoading: false,
   isError: false,
 };
+
+const showToast = (type, msg) => {
+  Toast.show({
+    type: type,
+    text1: msg,
+  });
+};
+
 export const UserLogin = createAsyncThunk("user", async (config) => {
   return axios(config)
     .then((response) => {
@@ -21,12 +29,7 @@ export const UserLogin = createAsyncThunk("user", async (config) => {
       console.log(error);
     });
 });
-const showToast = (type, msg) => {
-  Toast.show({
-    type: type,
-    text1: msg,
-  });
-};
+
 
 const authSlice = createSlice({
   name: "auth",

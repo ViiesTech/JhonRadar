@@ -24,6 +24,7 @@ export const styles = StyleSheet.create({
 
   flatlist_container: {
     flex:1,
+    // backgroundColor:'red',
     marginTop: 20,
     marginHorizontal: 15,
   },
@@ -35,17 +36,16 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 15,
     backgroundColor: "#BEBEBE",
-    paddingVertical: 5,
+    paddingVertical: 7,
   },
   modal_container: {
-    backgroundColor: "rgba(220, 220, 204, 0.8)",
+    backgroundColor: "gray",
     flex: 1,
     opacity: 0.8,
     width: "100%",
     borderTopColor: "#1EF1F5",
     borderBottomColor: "#1EF1F5",
     borderWidth: 1.2,
-    marginTop: 20,
   },
   modal_Main_container: {
     flex: 1,

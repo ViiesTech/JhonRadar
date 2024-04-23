@@ -8,8 +8,8 @@ import Otp from '../Screens/Otp';
 import ForgetPassword from '../Screens/ForgetPassword';
 import ResetPassword from '../Screens/Resetpassword';
 
-import Chat1 from '../Screens/chat1';
-import Chat2 from '../Screens/chat2';
+// import Chat1 from '../Screens/chat1';
+// import Chat2 from '../Screens/chat2';
 
 
 const Stack = createStackNavigator();
@@ -25,8 +25,8 @@ const AuthStack = () => {
       <Stack.Screen name="Otp" component={Otp} />
       <Stack.Screen name="ForgetPassword" component={ForgetPassword} />
       <Stack.Screen name="ResetPassword" component={ResetPassword} />
-      <Stack.Screen name="chat1" component={Chat1} />
-      <Stack.Screen name="chat2" component={Chat2} />
+      {/* <Stack.Screen name="chat1" component={Chat1} /> */}
+      {/* <Stack.Screen name="chat2" component={Chat2} /> */}
      
     </Stack.Navigator>
   );

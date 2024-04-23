@@ -8,35 +8,43 @@ import Toast from "react-native-toast-message";
 import CustomText from "../../Components/Text";
 import InputField from "../../Components/InputFiled";
 import CustomButton from "../../Components/Button";
-import { Formik } from "formik";
-import { forgetPasswordValidationSchema } from "../Utills/Validations";
 import BasUrl from "../../BasUrl";
 import WaveLoader from "../../Components/WaveLoader";
 import axios from "axios";
 
 const ForgetPassword = ({ navigation, route }) => {
   const [isLoader, setIsLoader] = useState(false);
-
-  const forgetUserPassword = async (values, { setValues }) => {
+  const [value,setValue] =useState(null)
+  const onChangeText = (changedText, key) => {
+    setValue(oldForm => {
+      return { ...oldForm, [key]: changedText };
+    });
+  };
+  const showToast = (type, msg) => {
+    Toast.show({
+      type: type,
+      text1: msg,
+    });
+  };
+  const forgetUserPassword = async () => {
     setIsLoader(true);
-    console.log("emailllllllll", values.email,);
+    console.log("emailllllllll", value);
     let data = JSON.stringify({
-      email: values.email,
+      email: value.email,
     });
     let config = {
       method: "post",
       maxBodyLength: Infinity,
       url: `${BasUrl}ForgetPasswordEmail`,
       headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
       },
       data: data,
     };
     axios
       .request(config)
       .then((response) => {
-        console.log("responsesssssssssss", response.data);
         const res = response.data;
         setIsLoader(false);
         if (res.status === "Success") {
@@ -45,42 +53,21 @@ const ForgetPassword = ({ navigation, route }) => {
           });
           showToast("success", res.message);
 
-          setValues({ email: "" });
         } else {
           showToast("error", res.message);
         }
+        console.log('res', res)
       })
       .catch((error) => {
         setIsLoader(false);
-        showToast("error", response.data.message);
-        console.log("errrrrrrrrrr", response.data.message);
+        showToast("error", error);
+        console.log("errrrrrrrrrr", error);
       });
   };
-  const showToast = (type, msg) => {
-    Toast.show({
-      type: type,
-      text1: msg,
-    });
-  };
+
   return (
     <FastImage source={images.AuthBackground} style={{ flex: 1 }}>
-      <Formik
-        initialValues={{ email: "" }}
-        validateOnMount={true}
-        onSubmit={(values, { setValues }) =>
-          forgetUserPassword(values, { setValues })
-        }
-        validationSchema={forgetPasswordValidationSchema}
-      >
-        {({
-          handleSubmit,
-          handleChange,
-          handleBlur,
-          values,
-          touched,
-          errors,
-          isValid,
-        }) => (
+    
           <View style={styles.main_container}>
             <BackButton onPressBack={() => navigation.goBack()} />
             <View style={{ height: 80 }}></View>
@@ -91,29 +78,22 @@ const ForgetPassword = ({ navigation, route }) => {
               />
               <InputField
                 placeholder={"Email"}
-                value={values.email}
-                onChangeText={handleChange("email")}
-                onBlur={handleBlur("email")}
+                onChangeText={changedText => onChangeText(changedText, 'email')}
                 keyboardType={"email-address"}
-                // isEdit={false}
               />
-              {errors.email && touched.email && (
-                <Text style={styles.errors}>{errors.email}</Text>
-              )}
+            
               {isLoader ? (
                 <WaveLoader />
               ) : (
                 <CustomButton
                   buttonText={"Submit"}
                   onPress={() => {
-                    handleSubmit(values);
+                    forgetUserPassword();
                   }}
                 />
               )}
             </View>
           </View>
-        )}
-      </Formik>
       <Toast />
     </FastImage>
   );

@@ -1,1 +1,1 @@
-export default "https://kind-pear-tadpole-hem.cyclic.app/api/user/"
+export default "https://appsdemo.pro/johnradar/api/user/"

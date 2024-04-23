@@ -1,88 +1,148 @@
 import {
   View,
   Image,
-  TextInput,
-  FlatList,
   TouchableOpacity,
   Text,
+  ActivityIndicator,
   ScrollView,
-  KeyboardAvoidingView,
+  FlatList,
 } from "react-native";
 import React, {
   useState,
   useEffect,
-  // useCallback,
   useMemo,
   useRef,
 } from "react";
-import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import Geocoder from "react-native-geocoding";
+import MapView, { Polygon } from "react-native-maps";
 import Modal from "react-native-modal";
 import { Marker } from "react-native-maps";
 import Geolocation from "@react-native-community/geolocation";
 import { styles } from "./index.style";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+import Cross from 'react-native-vector-icons/Entypo'
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Entypo from "react-native-vector-icons/Entypo";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import Fontisto from "react-native-vector-icons/Fontisto";
-import images from "../../Constants/images";
-import { RadioButton } from "react-native-paper";
-import { COLORS } from "../../Constants/theme";
-import Lottie from "lottie-react-native";
 import CustomText from "../../Components/Text";
-import InputField from "../../Components/InputFiled";
 import CustomButton from "../../Components/Button";
-import { useDispatch } from "react-redux";
-import { logOut } from "../../Redux/authSlice";
+import { useSelector } from "react-redux";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import MapViewDirections from "react-native-maps-directions";
+import axios from "axios";
 
-const Home = ({ navigation }) => {
+import MenuModal from "../../Components/Modal/MenuModal";
+import MapViewDirections from "react-native-maps-directions";
+import Toast from "react-native-toast-message";
+import BasUrl from "../../BasUrl";
+const Home = ({ navigation, route }) => {
   const [isModalVisible, setModalVisible] = useState(false);
-  const [isregisterModalVisible, setRegisterModalVisible] = useState(false);
-  const [isplaceYourAddModal, setPlaceYourAddModal] = useState(false);
-  const [isSelectPackageModal, setSelectPackageModal] = useState(false);
-  const [isPaymentModalVisible, setPaymentModalVisible] = useState(false);
-  const [isThanksModalVisible, setThanksModalVisible] = useState(false);
-  const [isConfirmModalVisible, setConfirmModalVisible] = useState(false);
-  const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
+  const [region, setRegion] = useState();
+  const [nearRegion, setNearRegion] = useState()
+  const [searchRegion, setSearchRegion] = useState();
+  const [isMapMoving, setIsMapMoving] = useState(true);
+  const mapRef = useRef(null);
   const [isSelectDistinationVisible, setSelectDistinationVisible] = useState(
     false
   );
-  const [checked, setChecked] = useState();
+  const [imageLoading, setImageLoading] = useState(false)
   const [startLocation, setStartLocation] = useState(null);
   const [endLocation, setEndLocation] = useState(null);
+  const [ads, setAds] = useState([]);
+  const userId = useSelector(state => state.authData.user._id)
+  const [bussinessId, setBussinessId] = useState()
   const [myLocation, setMyLocation] = useState(region);
+  const [currentRegion, setCurrentRegion] = useState();
 
-  const handleDirectionsReady = (result) => {
-    result?.coordinates;
+  const [isLoading, setIsLoading] = useState(false)
+  const [currentLocation, setCurrentLocation] = useState([]);
+  const bottomSheetRef = useRef(null);
+  const snapPoints = useMemo(() => ["12%", "45%"], []);
+  const [showLocation, setShowLocation] = useState(false)
+  Geocoder.init("AIzaSyCxPKJMEW5ko5BoDLW5F3K4bzs-faQaHU8");
+  const [selectedAd, setSelectedAd] = useState(null); // State to track selected ad
+  // Function to show modal and set selected ad
+  const [nearLocation, setNearLocation] = useState([])
+
+  const [dropOffLocation, setDropOffLocation] = useState({
+    latitude: '',
+    longitude: ''
+  })
+  useEffect(() => {
+    Geolocation.getCurrentPosition((pos) => {
+      const crd = pos.coords;
+      setCurrentRegion({
+        latitude: crd.latitude,
+        longitude: crd.longitude,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
+      })
+      setRegion({
+        latitude: crd.latitude,
+        longitude: crd.longitude,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
+      });
+    });
+  }, []);
+
+  const handleRegionChangeComplete = (region) => {
+    console.log('Current Location - Latitude:', region.latitude, 'Longitude:', region.longitude);
+    // console.log('map moving', isMapMoving)
+    if (isMapMoving) {
+      const lat = region.latitude
+      const lng = region.longitude
+      setRegion((oldRegion) => ({
+        ...oldRegion,
+        latitude: lat,
+        longitude: lng,
+      }))
+    }
+    setIsMapMoving(true)
   };
 
-  const handleStartLocationSelect = (data, details) => {
-    // Handle start location selection from autocomplete
-    const coordinate = {
-      latitude: details.geometry.location.lat,
-      longitude: details.geometry.location.lng,
+  const showAdModal = (adId) => {
+    setIsLoading(true)
+    let config = {
+      method: 'get',
+      maxBodyLength: Infinity,
+      url: `${BasUrl}AllAds/${adId}`,
+      headers: {
+        'Accept': 'application/json'
+      }
     };
 
-    setStartLocation({ name: data.description, coordinate });
+    axios.request(config)
+      .then((response) => {
+        setSelectedAd(response.data)
+        setIsLoading(false)
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+
+  const hideModal = () => {
+    setSelectedAd(null);
+  };
+
+
+  // const opengallery,handleregisterlocation,handleSelectLocationStart
+
+  const showToast = (type, msg) => {
+    Toast.show({
+      type: type,
+      text1: msg,
+    });
   };
 
   const handleEndLocationSelect = (data, details) => {
-    // Handle end location selection from autocomplete
     const coordinate = {
       latitude: details.geometry.location.lat,
       longitude: details.geometry.location.lng,
     };
     setEndLocation({ name: data.description, coordinate });
   };
-
   const animateToRegion = (coordinate) => {
-    // Animate the map to focus on a specific coordinate
     mapRef.current.animateToRegion(
       {
         ...coordinate,
@@ -93,117 +153,105 @@ const Home = ({ navigation }) => {
     );
   };
 
-  const [region, setRegion] = useState({
-    latitude: 43.0,
-    longitude: -75.0,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  });
-  const mapRef = useRef(null);
-  const dispatch = useDispatch();
+  //getAllAds
 
-  // Function to handle place selection
+
+  //getAllLocation
+
+
+  const getAllLocations = () => {
+    let config = {
+      method: 'get',
+      maxBodyLength: Infinity,
+      url: `${BasUrl}allLocation`,
+      headers: {
+        'Accept': 'application/json'
+      }
+    };
+
+    axios.request(config)
+      .then((response) => {
+        setCurrentLocation(response.data.data)
+        setBussinessId(response.data.data)
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 
   useEffect(() => {
-    // Request location permission
-    Geolocation.requestAuthorization();
+    getAllLocations()
+  }, [])
 
-    // Set up location tracking (update every 1000 milliseconds or 1 second)
-    Geolocation.watchPosition(
-      (position) => {
-        const { latitude, longitude } = position?.coords;
-        setMyLocation({
-          latitude,
-          longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        });
-      },
-      (error) => console.log(error),
-      {
-        enableHighAccuracy: true,
-        timeout: 20000,
-        maximumAge: 1000,
-        distanceFilter: 10,
-      }
-    );
 
-    // Clean up the location tracking when the component is unmounted
-    // return () => {
-    //   Geolocation.clearWatch(locationWatchId);
-    // };
-  }, []);
-  console.log("my location ?????????????????", myLocation);
-  const handleMapPress = (event) => {
-    const { coordinate } = event.nativeEvent;
-    // Check if startLocation is already set, if not, set it
-    if (!startLocation) {
-      setStartLocation({ coordinate });
-    } else {
-      // If startLocation is set, set endLocation
-      setEndLocation({ coordinate });
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      getAllLocations()
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  //watchPosition code
+
+
+  //handleMapPress
+
+  const fitToPath = () => {
+    if (mapRef && dropOffLocation && dropOffLocation.latitude && dropOffLocation.longitude) {
+      mapRef.current.fitToCoordinates(
+        [
+          region,
+          {
+            latitude: dropOffLocation?.latitude,
+            longitude: dropOffLocation?.longitude,
+          },
+        ],
+        {
+          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+          animated: true,
+        },
+      );
     }
   };
 
-  useEffect(() => {
-    // renderCoords();
-    Geolocation.getCurrentPosition((pos) => {
-      const crd = pos.coords;
-      setRegion({
-        latitude: crd.latitude,
-        longitude: crd.longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
+  const getNearByLocations = async (id, type) => {
+    setIsLoading(true)
+
+    let config = {
+      method: 'get',
+      maxBodyLength: Infinity,
+      url: `https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=AIzaSyCxPKJMEW5ko5BoDLW5F3K4bzs-faQaHU8&location=${nearRegion?.latitude},${nearRegion?.longitude}&radius=500&type=${type}`,
+      headers: {}
+    };
+    axios.request(config)
+      .then((response) => {
+        setIsLoading(false)
+        setShowLocation(true)
+        // setRegion({
+        //   ...region,
+        //   longitudeDelta: 0.01,
+        //   latitudeDelta: 0.01
+        // })
+        setNearLocation(response?.data?.results)
+
+        if (!response?.data?.results.length) {
+          showToast('info', `No ${type} nearby`)
+
+        }
+      })
+      .catch((error) => {
+        setIsLoading(false)
+
+        console.log(error);
       });
-    });
-  }, []);
+
+  }
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
-  const toggleRegisterModal = () => {
-    setRegisterModalVisible(!isregisterModalVisible);
-    toggleModal();
-  };
-  const togglePlaceYourAdd = () => {
-    setPlaceYourAddModal(!isplaceYourAddModal);
-    toggleModal();
-    setRegisterModalVisible(false);
-  };
-  const toggleSelectPackage = () => {
-    setSelectPackageModal(!isSelectPackageModal);
-    setModalVisible(false);
-    setPlaceYourAddModal(false);
-    setRegisterModalVisible(false);
-    setPlaceYourAddModal(false);
-  };
-  const toggleMakePayment = () => {
-    setPaymentModalVisible(!isPaymentModalVisible);
-    setModalVisible(false);
-    setPlaceYourAddModal(false);
-    setRegisterModalVisible(false);
-    setSelectPackageModal(false);
-  };
-  const toggleThankYou = () => {
-    setThanksModalVisible(!isThanksModalVisible);
-    setModalVisible(false);
-    setPlaceYourAddModal(false);
-    setRegisterModalVisible(false);
-    setSelectPackageModal(false);
-    setPaymentModalVisible(false);
-  };
-  const toggleConfirm = () => {
-    setConfirmModalVisible(!isConfirmModalVisible);
-    setModalVisible(false);
-    setPlaceYourAddModal(false);
-    setRegisterModalVisible(false);
-    setSelectPackageModal(false);
-    setPaymentModalVisible(false);
-    setThanksModalVisible(false);
-  };
-  const toggleModalSettings = () => {
-    setSettingsModalVisible(!isSettingsModalVisible);
-    setModalVisible(false);
-  };
+
   const toggleDistinationModal = () => {
     setSelectDistinationVisible(!isSelectDistinationVisible);
   };
@@ -213,114 +261,285 @@ const Home = ({ navigation }) => {
       name: "Icon 1",
       iconName: "local-restaurant",
       title: "Restaurants",
+      type: 'restaurant'
     },
     {
       id: 2,
       name: "Icon 2",
-      iconName: "coffee",
-      title: "Coffee",
+      iconName: "local-cafe",
+      title: "Cafe",
+      type: 'cafe'
     },
     {
       id: 3,
       name: "Icon 2",
       iconName: "local-hospital",
       title: "Hospital",
+      type: 'hospital'
     },
     {
       id: 4,
       name: "Icon 2",
-      iconName: "coffee",
-      title: "Coffee",
+      iconName: "local-pharmacy",
+      title: "Pharmacy",
+      type: 'pharmacy'
+    },
+    {
+      id: 5,
+      name: "Icon 2",
+      iconName: "sports-gymnastics",
+      title: "Gym",
+      type: 'gym'
+    },
+    {
+      id: 6,
+      name: "Icon 2",
+      iconName: "park",
+      title: "Park",
+      type: 'park'
+    },
+    {
+      id: 7,
+      name: "Icon 2",
+      iconName: "museum",
+      title: "Museum",
+      type: 'museum'
+    },
+    {
+      id: 8,
+      name: "Icon 2",
+      iconName: "shopping-cart",
+      title: "Shopping Mall",
+      type: 'shopping_mall'
+    },
+    {
+      id: 9,
+      name: "Icon 2",
+      iconName: "local-airport",
+      title: "Airport",
+      type: 'airport'
+    },
+    {
+      id: 10,
+      name: "Icon 2",
+      iconName: "directions-bus",
+      title: "Bus Station",
+      type: 'bus_station'
+    },
+    {
+      id: 11,
+      name: "Icon 2",
+      iconName: "train",
+      title: "Train Station",
+      type: 'train_station'
+    },
+    {
+      id: 12,
+      name: "Icon 2",
+      iconName: "shopping-bag",
+      title: "Bank",
+      type: 'bank'
+    },
+    {
+      id: 13,
+      name: "Icon 2",
+      iconName: "local-post-office",
+      title: "Post Office",
+      type: 'post_office'
+    },
+    {
+      id: 14,
+      name: "Icon 2",
+      iconName: "school",
+      title: "School",
+      type: 'school'
     },
   ];
 
-  // ref
-  const bottomSheetRef = useRef(null);
-
-  // variables
-  const snapPoints = useMemo(() => ["12%", "45%"], []);
-
   return (
     <View style={{ flex: 1 }}>
+
       <View style={styles.menuBtn}>
         <TouchableOpacity
           style={{ position: "absolute" }}
-          onPress={() => toggleModal()}
+          // onPress={() => navigation.navigate('RegisterLocation')}
+          onPress={() => navigation.openDrawer()}
         >
           <Entypo name={"menu"} size={30} color={"#fff"} style={{}} />
         </TouchableOpacity>
+
       </View>
+
+      {isLoading &&
+        (
+          <View style={{ position: 'absolute', height: '100%', zIndex: 1000, alignSelf: 'center', justifyContent: 'center', }}>
+            <ActivityIndicator size="large" color="brown" />
+          </View>
+        )
+      }
+
       <MapView
         ref={mapRef}
-        style={styles.map}
-        initialRegion={region}
-        // showsUserLocation={true}
-        showsMyLocationButton={true}
-        followsUserLocation={true}
-        // showsCompass={true}
+        // showsMyLocationButton={true}
+        // followsUserLocation={true}
         scrollEnabled={true}
-        zoomEnabled={true}
-        pitchEnabled={true}
-        rotateEnabled={true}
-        userLocationAnnotationTitle="My Locations"
+        // zoomEnabled={true}
+        // pitchEnabled={true}
+        // rotateEnabled={true}
+        // userLocationAnnotationTitle="My Locations"
         region={region}
-        onRegionChangeComplete={(resp) => setRegion(resp)}
+        // onRegionChangeComplete={handleRegionChangeComplete}
+        onRegionChangeComplete={region => {
+          // console.log('region', region)
+          setNearRegion(region);
+          // setBussinessId('abc')
+        }}
+        // onRegionChangeComplete={()=>handleRegionChangeComplete}
+        // onRegionChangeComplete={(resp) => setRegion(resp)}
+        style={styles.map}
+      // initialRegion={region}
       >
-        {myLocation ? (
-          <Marker title="My Location " coordinate={myLocation}>
-            <View style={{ width: 50, height: 80 }}>
-              <Image
-                source={images.carMarker} // Your marker image source
-                style={{
-                  flex: 1,
-                  width: null,
-                  height: null,
-                  resizeMode: "contain",
+        {dropOffLocation.latitude && dropOffLocation.longitude &&
+          (
+            <MapViewDirections
+              origin={{
+                latitude: Number(currentRegion?.latitude),
+                longitude: Number(currentRegion?.longitude)
+              }}
+              destination={{
+                latitude: Number(dropOffLocation?.latitude),
+                longitude: Number(dropOffLocation?.longitude),
+              }}
+              onReady={fitToPath}
+              apikey={'AIzaSyCxPKJMEW5ko5BoDLW5F3K4bzs-faQaHU8'}
+              strokeWidth={6}
+              strokeColor={'red'}
+            />
+          )
+
+        }
+
+
+        {/* //not in need code */}
+
+        {showLocation && (
+          //  setShowLocation(false),
+          nearLocation?.map((area, index) => {
+            return (
+              <Marker
+                key={index}
+                coordinate={{
+                  latitude: area?.geometry?.location?.lat,
+                  longitude: area?.geometry?.location?.lng,
                 }}
+                icon={{ uri: area?.icon }}
+                title={area?.name}
+              // onPress={() => showAdModal(area._id)} // Show modal instead of title
               />
-            </View>
-          </Marker>
-        ) : null}
-        {startLocation ? (
-          <Marker
-            title="Selected Location"
-            coordinate={startLocation?.coordinate}
-          >
-            <View style={{ width: 50, height: 50 }}>
-              <Image
-                source={images.markerImage} // Your marker image source
-                style={{
-                  flex: 1,
-                  width: null,
-                  height: null,
-                  resizeMode: "contain",
+            )
+
+          })
+
+
+        )}
+
+
+        {currentLocation.length > 0 &&
+          currentLocation.map((area, index) => {
+            return (
+              <Marker
+                key={index}
+                coordinate={{
+                  latitude: parseFloat(area?.Latitude),
+                  longitude: parseFloat(area?.Longtitude),
                 }}
+                onPress={() => showAdModal(area._id)} // Show modal instead of title
               />
-            </View>
-          </Marker>
-        ) : null}
-        {endLocation ? (
-          <Marker title="End Location" coordinate={endLocation?.coordinate} />
-        ) : null}
-        {startLocation && endLocation ? (
-          <MapViewDirections
-            origin={startLocation?.coordinate}
-            destination={endLocation?.coordinate}
-            apikey={"AIzaSyCxPKJMEW5ko5BoDLW5F3K4bzs-faQaHU8"}
-            strokeWidth={6}
-            strokeColor="green"
-            onReady={handleDirectionsReady}
-            //  zIndex={0}
-          />
-        ) : null}
+            );
+          })}
+
       </MapView>
+
+      <Modal
+        visible={selectedAd !== null}
+        animationType="slide"
+        style={{ borderRadius: 10 }}
+        transparent={true}
+        onBackdropPress={hideModal}
+        onRequestClose={hideModal}
+      >
+
+        <View style={{
+          maxHeight: 530, borderRadius: 30, shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: 0.30,
+          shadowRadius: 4.65,
+
+          elevation: 12, backgroundColor: 'white'
+        }}>
+          <TouchableOpacity style={{ alignSelf: 'flex-end', right: 10, padding: 5, top: 0 }} onPress={hideModal}>
+            <Cross name='cross' size={25} color={'black'} />
+          </TouchableOpacity>
+          <ScrollView contentContainerStyle={{
+            paddingBottom: 40, flexGrow: 1, borderRadius: 15
+          }} showsVerticalScrollIndicator={false}>
+
+            {selectedAd?.Ads?.length > 0 ? (
+              selectedAd?.Ads?.map((ad, adIndex) => (
+
+                <View key={adIndex} style={{ flex: 1, borderRadius: 15, marginTop: 25 }}>
+
+                  <View style={{ marginHorizontal: 20, alignSelf: 'center', borderRadius: 15 }}>
+
+
+                    <Text style={{ color: 'rgb(10,10,0)', fontSize: 24, fontWeight: '600' }}>
+                      {selectedAd?.Ads[adIndex]?.AdDescription}
+                    </Text>
+
+
+
+                    {selectedAd?.Ads[adIndex]?.images && (
+                      <Image style={{ height: 250, width: 250, borderRadius: 15, marginTop: 10 }} source={{ uri: `https://appsdemo.pro/johnradar/${selectedAd?.Ads[adIndex]?.images}` }} />
+
+                    )}
+                  </View>
+                </View>
+              ))
+            )
+              : (
+                <View style={{
+                  height: 80, justifyContent: 'center', alignItems: 'center', shadowColor: "#000",
+                  shadowOffset: {
+                    width: 0,
+                    height: 4,
+                  },
+                  shadowOpacity: 0.30,
+                  shadowRadius: 4.65,
+
+                  elevation: 12,
+                }}>
+
+                  <Text style={{ textAlign: 'center', position: 'absolute', color: 'rgb(10,10,0)', fontSize: 22, fontWeight: '600' }}>
+                    No ads registered at this location.
+                  </Text>
+                </View>
+              )
+
+            }
+
+          </ScrollView>
+        </View>
+      </Modal>
 
       <BottomSheet
         ref={bottomSheetRef}
         index={1}
         snapPoints={snapPoints}
         backgroundStyle={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-        // onChange={handleSheetChanges}
+      // onChange={handleSheetChanges}
       >
         <View style={styles.contentContainer}>
           <View style={{ flexDirection: "row" }}>
@@ -334,15 +553,12 @@ const Home = ({ navigation }) => {
             <GooglePlacesAutocomplete
               placeholder="Search here..."
               onPress={(data, details = null) => {
-                console.log("Selected Place Data:", data);
-                console.log("Selected Place details:", details);
                 let chosenRegion = {
                   longitude: details.geometry.location.lng,
                   latitude: details.geometry.location.lat,
                   latitudeDelta: 0.005,
                   longitudeDelta: 0.005,
                 };
-                setRegion(chosenRegion);
                 mapRef.current.animateToRegion(chosenRegion, 1000);
               }}
               textInputProps={{
@@ -382,17 +598,16 @@ const Home = ({ navigation }) => {
           <CustomButton
             buttonText={"select your pick and drop"}
             style={styles.selectYourPickAndDrop}
-            // lllllllllllllllllllllllllllllllllllllllllllll
             onPress={() => toggleDistinationModal()}
           />
           <BottomSheetFlatList
-            showsHorizontalScrollIndicator={false}
-            horizontal
+            showsHorizontalScrollIndicator={true}
+            horizontal={true}
             data={nearByData}
             renderItem={({ item }) => {
               return (
                 <View style={styles.flatlist_container}>
-                  <TouchableOpacity style={styles.nearByData_View}>
+                  <TouchableOpacity onPress={() => getNearByLocations(item.id, item.type)} style={styles.nearByData_View}>
                     <MaterialIcons
                       name={item.iconName}
                       size={18}
@@ -416,856 +631,21 @@ const Home = ({ navigation }) => {
         isVisible={isModalVisible}
         style={styles.modal_Main_container}
       >
-        <View style={styles.modal_container}>
-          <View style={[styles.closebtn, { alignSelf: "flex-end" }]}>
-            <TouchableOpacity onPress={() => toggleModal()}>
-              <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
-            </TouchableOpacity>
-          </View>
-          <View style={{ flexDirection: "row" }}>
-            <View style={{ bottom: 20, marginLeft: 30 }}>
-              <Image source={images.avatar} />
-            </View>
-            <View style={{ bottom: 20, marginLeft: 15 }}>
-              <CustomText
-                text={"Lilly Unrah"}
-                style={{ fontSize: 16, fontWeight: "700" }}
-              />
-              <TouchableOpacity
-                style={{
-                  height: 25,
-                  width: 85,
-                  backgroundColor: "rgb(208, 208, 229)",
-                  marginTop: 38,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  borderRadius: 20,
-                }}
-              >
-                <CustomText text={"View Profile"} style={{ fontSize: 11 }} />
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View
-            style={{ backgroundColor: "#fff", height: 1.5, marginTop: 10 }}
-          />
-          <TouchableOpacity
-            onPress={() => toggleRegisterModal()}
-            style={styles.menu_btn}
-          >
-            <CustomText
-              text={"Register Your Location"}
-              style={styles.title_btn}
-            />
-            <Entypo
-              name={"chevron-small-right"}
-              size={30}
-              color={"#fff"}
-              style={{}}
-            />
-          </TouchableOpacity>
-          <View
-            style={{ backgroundColor: "#fff", height: 1.5, marginTop: 10 }}
-          />
-          <TouchableOpacity
-            onPress={() => {
-              togglePlaceYourAdd();
-            }}
-            style={styles.menu_btn}
-          >
-            <CustomText text={"Place Your Ad"} style={styles.title_btn} />
-            <Entypo
-              name={"chevron-small-right"}
-              size={30}
-              color={"#fff"}
-              style={{}}
-            />
-          </TouchableOpacity>
-          <View
-            style={{ backgroundColor: "#fff", height: 1.5, marginTop: 10 }}
-          />
-          <TouchableOpacity
-            onPress={() => toggleModalSettings()}
-            style={styles.menu_btn}
-          >
-            <CustomText text={"Settings"} style={styles.title_btn} />
-            <Entypo
-              name={"chevron-small-right"}
-              size={30}
-              color={"#fff"}
-              style={{}}
-            />
-          </TouchableOpacity>
-          <View
-            style={{ backgroundColor: "#fff", height: 1.5, marginTop: 10 }}
-          />
-          <TouchableOpacity style={styles.menu_btn}>
-            <CustomText text={"Help and Feedback"} style={styles.title_btn} />
-          </TouchableOpacity>
-          <View
-            style={{ backgroundColor: "#fff", height: 1.5, marginTop: 10 }}
-          />
-          <TouchableOpacity
-            onPress={() => {
-              dispatch(logOut());
-            }}
-            style={styles.menu_btn}
-          >
-            <CustomText text={"Logout"} style={styles.title_btn} />
-          </TouchableOpacity>
-        </View>
+        <MenuModal
+          navigation={navigation}
+          toggleModal={toggleModal}
+        />
       </Modal>
-      {/* Register Your Location */}
-      <Modal
-        animationIn="slideInLeft"
-        animationOut="slideOutRight"
-        isVisible={isregisterModalVisible}
-        style={styles.modal_Main_container}
-        avoidKeyboard={false}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
-        >
-          <View style={styles.modal_container}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <CustomText
-                text={"Register Your Location"}
-                style={{
-                  marginHorizontal: 20,
-                  fontSize: 18,
-                  fontWeight: "bold",
-                  marginTop: 18,
-                }}
-              />
-              <TouchableOpacity
-                style={styles.closebtn}
-                onPress={() => {
-                  toggleRegisterModal();
-                }}
-              >
-                <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
-              </TouchableOpacity>
-            </View>
-            <ScrollView>
-              <View
-                style={{
-                  backgroundColor: "#1EF1F5",
-                  height: 1.5,
-                  marginTop: 20,
-                }}
-              ></View>
-              <View style={{ marginHorizontal: 25, marginTop: 15 }}>
-                <InputField placeholder={"Enter Your Business Location"} />
-                <InputField placeholder={"Business Name"} />
-                <InputField placeholder={"Your Phone Number"} />
-                <InputField placeholder={"Your Email Address"} />
 
-                <CustomButton
-                  buttonText={"Continue"}
-                  onPress={() => toggleThankYou()}
-                />
-              </View>
-            </ScrollView>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-      {/* Place Your Ad.. */}
-      <Modal
-        animationIn="slideInLeft"
-        animationOut="slideOutRight"
-        isVisible={isplaceYourAddModal}
-        style={styles.modal_Main_container}
-      >
-        <View style={styles.modal_container}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <CustomText
-              text={"Place Your Ad.."}
-              style={{
-                marginHorizontal: 20,
-                fontSize: 18,
-                fontWeight: "bold",
-                marginTop: 18,
-              }}
-            />
-            <TouchableOpacity
-              style={styles.closebtn}
-              onPress={() => {
-                togglePlaceYourAdd();
-              }}
-            >
-              <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
-            </TouchableOpacity>
-          </View>
-          <View
-            style={{
-              backgroundColor: "#1EF1F5",
-              height: 1.5,
-              marginTop: 20,
-            }}
-          ></View>
-          <ScrollView>
-            <View style={{ marginHorizontal: 25, marginTop: 15 }}>
-              <InputField placeholder={"Enter Your Business Location"} />
-              <InputField placeholder={"Business Name"} />
-              <InputField placeholder={"Business Category"} />
-              <InputField placeholder={"Your Phone Number"} />
-              <InputField placeholder={"Your Email Address"} />
-
-              <CustomButton
-                buttonText={"Select Package"}
-                onPress={() => toggleSelectPackage()}
-              />
-            </View>
-          </ScrollView>
-        </View>
-      </Modal>
       {/* Select package.. */}
-      <Modal
-        animationIn="slideInLeft"
-        animationOut="slideOutRight"
-        isVisible={isSelectPackageModal}
-        style={styles.modal_Main_container}
-      >
-        <View style={styles.modal_container}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <CustomText
-              text={"Select Package"}
-              style={{
-                marginHorizontal: 20,
-                fontSize: 18,
-                fontWeight: "bold",
-                marginTop: 18,
-              }}
-            />
-            <TouchableOpacity
-              style={styles.closebtn}
-              onPress={() => {
-                toggleSelectPackage();
-              }}
-            >
-              <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
-            </TouchableOpacity>
-          </View>
-          <View
-            style={{
-              backgroundColor: "#1EF1F5",
-              height: 1.5,
-              marginTop: 20,
-            }}
-          ></View>
-          <View style={{ marginHorizontal: 25, marginTop: 15 }}>
-            <TouchableOpacity
-              onPress={() => setChecked("first")}
-              style={[
-                styles.checkingView,
-                checked === "first"
-                  ? { borderColor: COLORS.primary, borderWidth: 1.5 }
-                  : null,
-              ]}
-            >
-              <RadioButton
-                value="first"
-                color={COLORS.primary}
-                uncheckedColor="#fff"
-                status={checked === "first" ? "checked" : "unchecked"}
-                style={styles.radiobtn}
-                onPress={() => setChecked("first")}
-              />
-              <View style={{ marginHorizontal: 15 }}>
-                <CustomText
-                  text={"$119.99/Yearly"}
-                  style={{ fontSize: 18, fontWeight: "bold" }}
-                />
-                <CustomText text={"$9.99/Month billed annually "} />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setChecked("second")}
-              style={[
-                styles.checkingView,
-                checked === "second"
-                  ? { borderColor: COLORS.primary, borderWidth: 1.5 }
-                  : null,
-              ]}
-            >
-              <RadioButton
-                value="second"
-                color={COLORS.primary}
-                uncheckedColor="#fff"
-                status={checked === "second" ? "checked" : "unchecked"}
-                style={styles.radiobtn}
-                onPress={() => setChecked("second")}
-              />
-              <View style={{ marginHorizontal: 15 }}>
-                <CustomText
-                  text={"$50.99/Monthly"}
-                  style={{ fontSize: 18, fontWeight: "bold" }}
-                />
-                <CustomText text={"$50.99/ billed for 1 month"} />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setChecked("third")}
-              style={[
-                styles.checkingView,
-                checked === "third"
-                  ? { borderColor: COLORS.primary, borderWidth: 1.5 }
-                  : null,
-              ]}
-            >
-              <RadioButton
-                value="third"
-                color={COLORS.primary}
-                uncheckedColor="#fff"
-                status={checked === "third" ? "checked" : "unchecked"}
-                style={styles.radiobtn}
-                onPress={() => setChecked("third")}
-              />
-              <View style={{ marginHorizontal: 15 }}>
-                <CustomText
-                  text={"$15.99/weekly"}
-                  style={{ fontSize: 18, fontWeight: "bold" }}
-                />
-                <CustomText text={"$15.99/ billed for 1 week"} />
-              </View>
-            </TouchableOpacity>
-            <CustomButton
-              buttonText={"Continue"}
-              onPress={() => toggleMakePayment()}
-            />
-          </View>
-        </View>
-      </Modal>
+
       {/* Make Your Payment.. */}
-      <Modal
-        animationIn="slideInLeft"
-        animationOut="slideOutRight"
-        isVisible={isPaymentModalVisible}
-        style={{
-          width: "100%",
-          margin: 0,
-        }}
-      >
-        <View style={styles.modal_container}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <CustomText
-              text={"Make Your Payment"}
-              style={{
-                marginHorizontal: 20,
-                fontSize: 18,
-                fontWeight: "bold",
-                marginTop: 18,
-              }}
-            />
-            <TouchableOpacity
-              style={styles.closebtn}
-              onPress={() => {
-                toggleMakePayment();
-              }}
-            >
-              <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.cardView}>
-            <View
-              style={{
-                flexDirection: "row",
-                marginTop: 15,
-                justifyContent: "space-around",
-              }}
-            >
-              <CustomText
-                text={"Current credit card"}
-                style={{ fontSize: 12 }}
-              />
-              <CustomText
-                text={"Add new credit card"}
-                style={{ fontSize: 12 }}
-              />
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                paddingHorizontal: 10,
-                justifyContent: "space-between",
-                marginTop: 10,
-              }}
-            >
-              <View
-                style={{
-                  height: 90,
-                  width: wp("33%"),
-                  borderWidth: 1,
-                  borderColor: "white",
-                  borderRadius: 10,
-                  padding: 10,
-                }}
-              >
-                {/* <FontAwesome name={'cc-visa'} size={20} color={'white'} /> */}
 
-                <Fontisto name={"visa"} size={20} color={"#fff"} style={{}} />
-
-                <Text
-                  style={{
-                    fontSize: hp("1.6%"),
-                    color: "white",
-                    marginTop: 12,
-                  }}
-                >
-                  •••• •••• •••• 3294
-                </Text>
-
-                <Text style={{ fontSize: hp("1.3%"), color: "white" }}>
-                  Howard Pinsky
-                </Text>
-              </View>
-              <TouchableOpacity>
-                <View
-                  style={{
-                    height: 90,
-                    width: wp("33%"),
-                    borderWidth: 1,
-                    borderColor: "white",
-                    borderRadius: 10,
-                    padding: 10,
-                    backgroundColor: "white",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <View
-                    style={{
-                      height: 20,
-                      width: 20,
-                      backgroundColor: "#611885",
-                      borderRadius: 200,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Text style={{ fontWeight: "bold", color: "white" }}>
-                      +
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            </View>
-            <View style={{ marginHorizontal: 10 }}>
-              <Text
-                style={{ color: "white", fontSize: hp("1.3%"), marginTop: 15 }}
-              >
-                Name of card holder
-              </Text>
-
-              <TextInput
-                placeholder="Howard Pinsky"
-                style={{
-                  borderWidth: 2,
-                  borderColor: "white",
-                  borderRadius: 20,
-                  color: "white",
-                  paddingHorizontal: 20,
-                  marginTop: 10,
-                  backgroundColor: "#A2A2A2",
-                  opacity: 0.8,
-                }}
-                placeholderTextColor={"white"}
-              />
-
-              <Text
-                style={{ color: "white", fontSize: hp("1.3%"), marginTop: 15 }}
-              >
-                Credit card number
-              </Text>
-              <TextInput
-                placeholder="1234   3924   2394   3294"
-                style={{
-                  borderWidth: 2,
-                  borderColor: "white",
-                  borderRadius: 20,
-                  color: "white",
-                  paddingHorizontal: 20,
-                  marginTop: 10,
-                  backgroundColor: "#376CE3",
-                }}
-                placeholderTextColor={"white"}
-              />
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <View>
-                  <Text style={{ color: "white", marginTop: 10, fontSize: 12 }}>
-                    Expiration
-                  </Text>
-                  <TextInput
-                    placeholder="02/25"
-                    placeholderTextColor={"white"}
-                    style={{
-                      borderWidth: 1,
-                      borderColor: "#A2A2A2",
-                      borderRadius: 10,
-                      width: wp("35%"),
-                      height: 40,
-                      paddingHorizontal: 10,
-                      marginTop: 10,
-                      color: "white",
-                    }}
-                  />
-                </View>
-
-                <View>
-                  <Text style={{ color: "white", marginTop: 10, fontSize: 12 }}>
-                    CVV
-                  </Text>
-                  <TextInput
-                    placeholder="231"
-                    placeholderTextColor={"white"}
-                    style={{
-                      borderWidth: 1,
-                      borderColor: "#A2A2A2",
-                      borderRadius: 10,
-                      width: wp("35%"),
-                      height: 40,
-                      paddingHorizontal: 10,
-                      marginTop: 10,
-                      color: "white",
-                    }}
-                  />
-                </View>
-              </View>
-            </View>
-            <CustomButton
-              style={{ top: 20 }}
-              buttonText={"Make Payment"}
-              onPress={() => toggleConfirm()}
-            />
-          </View>
-        </View>
-      </Modal>
-      {/* thank you.. */}
-      <Modal
-        animationIn="slideInLeft"
-        animationOut="slideOutRight"
-        isVisible={isThanksModalVisible}
-        style={{ flex: 0.9, width: "100%", margin: 0 }}
-      >
-        <View
-          style={{
-            backgroundColor: "rgba(220, 220, 204, 0.8)",
-            flex: 0.5,
-            opacity: 0.8,
-            width: "100%",
-            borderColor: "#1EF1F5",
-            borderWidth: 1.2,
-            marginTop: 20,
-          }}
-        >
-          <TouchableOpacity
-            style={[styles.closebtn, { alignSelf: "flex-end" }]}
-            onPress={() => {
-              toggleThankYou();
-            }}
-          >
-            <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
-          </TouchableOpacity>
-
-          <View style={styles.thankYouView}>
-            <CustomText
-              text={"Thank You For Using \n        Our Service"}
-              style={styles.thankYouView}
-            />
-            <Lottie
-              source={images.thanks}
-              autoPlay
-              style={{
-                height: 130,
-                width: 130,
-                marginTop: 20,
-              }}
-            />
-          </View>
-        </View>
-      </Modal>
-      {/* tConfirm.. */}
-      <Modal
-        animationIn="slideInLeft"
-        animationOut="slideOutRight"
-        isVisible={isConfirmModalVisible}
-        style={styles.modal_Main_container}
-      >
-        <View
-          style={{
-            backgroundColor: "rgba(220, 220, 204, 0.8)",
-            flex: 0.5,
-            opacity: 0.8,
-            width: "100%",
-            borderColor: "#1EF1F5",
-            borderWidth: 1.2,
-            marginTop: 20,
-          }}
-        >
-          <TouchableOpacity
-            style={[styles.closebtn, { alignSelf: "flex-end" }]}
-            onPress={() => {
-              toggleConfirm();
-            }}
-          >
-            <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
-          </TouchableOpacity>
-
-          <View style={styles.thankYouView}>
-            <CustomText
-              text={
-                " Your Ad are placed \n after 24 hours will confirm \n you through Email.."
-              }
-              style={styles.thankYouView}
-            />
-            {/* <Lottie
-              source={images.thanks}
-              autoPlay
-              style={{
-                height: 130,
-                width: 130,
-                marginTop: 20,
-              }}
-            /> */}
-          </View>
-        </View>
-      </Modal>
-      {/* Settings.. */}
-      <Modal
-        animationIn="slideInLeft"
-        animationOut="slideOutRight"
-        isVisible={isSettingsModalVisible}
-        style={{ flex: 1, width: "100%", margin: 0 }}
-      >
-        <View style={styles.modal_container}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <CustomText
-              text={"Settings"}
-              style={{
-                marginHorizontal: 20,
-                fontSize: 20,
-                fontWeight: "bold",
-                marginTop: 18,
-              }}
-            />
-            <TouchableOpacity
-              style={styles.closebtn}
-              onPress={() => {
-                toggleModalSettings();
-              }}
-            >
-              <Ionicons name={"close"} size={30} color={"#fff"} style={{}} />
-            </TouchableOpacity>
-          </View>
-          <View
-            style={{
-              backgroundColor: "#1EF1F5",
-              height: 1.5,
-              marginTop: 20,
-            }}
-          />
-          <ScrollView style={{ top: 5 }}>
-            <View
-              style={{
-                backgroundColor: "#CFCFCF",
-                marginHorizontal: 20,
-                marginTop: 20,
-                borderRadius: 10,
-              }}
-            >
-              <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={"General"} style={styles.title_btn} />
-                <Entypo
-                  name={"chevron-small-right"}
-                  size={30}
-                  color={"#fff"}
-                  style={{}}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={"Map Display"} style={styles.title_btn} />
-                <Entypo
-                  name={"chevron-small-right"}
-                  size={30}
-                  color={"#fff"}
-                  style={{}}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={"Voice and Sound"} style={styles.title_btn} />
-                <Entypo
-                  name={"chevron-small-right"}
-                  size={30}
-                  color={"#fff"}
-                  style={{}}
-                />
-              </TouchableOpacity>
-            </View>
-            <CustomText
-              text={"Driving preference"}
-              style={{
-                fontSize: 18,
-                fontWeight: "bold",
-                marginHorizontal: 20,
-                marginTop: 10,
-              }}
-            />
-            <View
-              style={{
-                backgroundColor: "#CFCFCF",
-                marginHorizontal: 20,
-                marginTop: 20,
-                borderRadius: 10,
-              }}
-            >
-              <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={"Navigation"} style={styles.title_btn} />
-                <Entypo
-                  name={"chevron-small-right"}
-                  size={30}
-                  color={"#fff"}
-                  style={{}}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={"Vehicle Details"} style={styles.title_btn} />
-                <Entypo
-                  name={"chevron-small-right"}
-                  size={30}
-                  color={"#fff"}
-                  style={{}}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menu_btn}>
-                <CustomText
-                  text={"Alert and reports"}
-                  style={styles.title_btn}
-                />
-                <Entypo
-                  name={"chevron-small-right"}
-                  size={30}
-                  color={"#fff"}
-                  style={{}}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={"Gas stations"} style={styles.title_btn} />
-                <Entypo
-                  name={"chevron-small-right"}
-                  size={30}
-                  color={"#fff"}
-                  style={{}}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={"Speedometer"} style={styles.title_btn} />
-                <Entypo
-                  name={"chevron-small-right"}
-                  size={30}
-                  color={"#fff"}
-                  style={{}}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={"Audio player"} style={styles.title_btn} />
-                <Entypo
-                  name={"chevron-small-right"}
-                  size={30}
-                  color={"#fff"}
-                  style={{}}
-                />
-              </TouchableOpacity>
-            </View>
-            <CustomText
-              text={"Notifications"}
-              style={{
-                fontSize: 18,
-                fontWeight: "bold",
-                marginHorizontal: 20,
-                marginTop: 10,
-              }}
-            />
-            <View
-              style={{
-                backgroundColor: "#CFCFCF",
-                marginHorizontal: 20,
-                marginTop: 20,
-                borderRadius: 10,
-                bottom: 15,
-              }}
-            >
-              <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={"Notifications"} style={styles.title_btn} />
-                <Entypo
-                  name={"chevron-small-right"}
-                  size={30}
-                  color={"#fff"}
-                  style={{}}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={"Planned drives"} style={styles.title_btn} />
-                <Entypo
-                  name={"chevron-small-right"}
-                  size={30}
-                  color={"#fff"}
-                  style={{}}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menu_btn}>
-                <CustomText text={"Reminders"} style={styles.title_btn} />
-                <Entypo
-                  name={"chevron-small-right"}
-                  size={30}
-                  color={"#fff"}
-                  style={{}}
-                />
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </View>
-      </Modal>
-      {/* select your distination  */}
       <Modal
         // animationIn="bounceInUp"
         // animationOut="bounceInDown"
+        onBackdropPress={toggleDistinationModal}
+
         isVisible={isSelectDistinationVisible}
         style={styles.modal_Main_container}
       >
@@ -1279,53 +659,7 @@ const Home = ({ navigation }) => {
             marginTop: 20,
           }}
         >
-          <View
-            style={{
-              flexDirection: "row",
-              marginTop: 20,
-            }}
-          >
-            <GooglePlacesAutocomplete
-              placeholder="PickUp Location here..."
-              onPress={(data, details = null) => {
-                handleStartLocationSelect(data, details);
-                animateToRegion(details.geometry.location);
-                // setStartLocation(data);
-                // setRegion(chosenRegion);
-                // mapRef.current.animateToRegion(chosenRegion, 1000);
-              }}
-              textInputProps={{
-                placeholderTextColor: "#fff",
-              }}
-              fetchDetails={true}
-              query={{
-                key: "AIzaSyCxPKJMEW5ko5BoDLW5F3K4bzs-faQaHU8",
-                language: "en",
-              }}
-              autoFillOnNotFound={true}
-              styles={{
-                container: {
-                  // borderColor: "black",
-                  // backgroundColor:'red'
-                },
-                textInputContainer: {
-                  width: "90%",
-                  alignSelf: "center",
-                  height: 50,
-                  borderColor: "black",
-                  borderWidth: 1,
-                  borderRadius: 10,
-                },
-                textInput: {
-                  height: 48,
-                  fontSize: 16,
-                  backgroundColor: "rgba(0, 0, 0, 0.5)",
-                  color: "white",
-                },
-                predefinedPlacesDescription: {},
-              }}
-            />
-          </View>
+          {/* //not in need code 2 */}
 
           <View
             style={{
@@ -1335,18 +669,27 @@ const Home = ({ navigation }) => {
             }}
           >
             <GooglePlacesAutocomplete
-              placeholder="Drop Off Location here..."
+              placeholder="Select Your Drop Off Location"
+
               onPress={(data, details = null) => {
-                // console.log("Selected Place Data:", data);
                 let chosenRegion = {
                   longitude: details.geometry.location.lng,
                   latitude: details.geometry.location.lat,
-                  latitudeDelta: 0.005,
-                  longitudeDelta: 0.005,
+                  latitudeDelta: 0.00005,
+                  longitudeDelta: 0.00005,
                 };
+                setDropOffLocation({
+                  latitude: details.geometry.location.lat,
+                  longitude: details.geometry.location.lng,
+                  latitudeDelta: 0.00005,
+                  longitudeDelta: 0.00005,
+                })
+                setSearchRegion(chosenRegion);
 
                 handleEndLocationSelect(data, details);
+                toggleDistinationModal();
                 animateToRegion(details.geometry.location);
+                setIsMapMoving(false);
                 // setRegion(chosenRegion);
                 // setEndLocation(data);
                 // mapRef.current.animateToRegion(chosenRegion, 1000);
@@ -1381,13 +724,15 @@ const Home = ({ navigation }) => {
                   backgroundColor: "red",
                 },
               }}
+
             />
           </View>
           <View style={{ flex: 1, justifyContent: "flex-end" }}>
             <CustomButton
-              buttonText={"Submit"}
+              buttonText={"Close"}
               style={styles.selectYourPickAndDrop}
               onPress={() => {
+                // Assuming dropOffLocation is already defined as a state variable
                 toggleDistinationModal();
               }}
             />
