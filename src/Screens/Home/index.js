@@ -61,7 +61,7 @@ const Home = ({ navigation, route }) => {
   const [selectedAd, setSelectedAd] = useState(null); // State to track selected ad
   // Function to show modal and set selected ad
   const [nearLocation, setNearLocation] = useState([])
-
+console.log('selectedAd',selectedAd)
   const [dropOffLocation, setDropOffLocation] = useState({
     latitude: '',
     longitude: ''
@@ -100,11 +100,14 @@ const Home = ({ navigation, route }) => {
   };
 
   const showAdModal = (adId) => {
+
+    console.log("adId", adId)
+
     setIsLoading(true)
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
-      url: `${BasUrl}AllAds/${adId}`,
+      url: `https://www.yourappdemo.com/johnradar/api/user/AllAds/${adId}`,
       headers: {
         'Accept': 'application/json'
       }
@@ -112,11 +115,13 @@ const Home = ({ navigation, route }) => {
 
     axios.request(config)
       .then((response) => {
+        console.log('response',response.data)
         setSelectedAd(response.data)
         setIsLoading(false)
       })
       .catch((error) => {
         console.log(error);
+        console.log(error.response.data)
       });
   };
 
@@ -446,6 +451,7 @@ const Home = ({ navigation, route }) => {
 
         {currentLocation.length > 0 &&
           currentLocation.map((area, index) => {
+            // console.log("area,,,", area)
             return (
               <Marker
                 key={index}
@@ -483,12 +489,14 @@ const Home = ({ navigation, route }) => {
           <TouchableOpacity style={{ alignSelf: 'flex-end', right: 10, padding: 5, top: 0 }} onPress={hideModal}>
             <Cross name='cross' size={25} color={'black'} />
           </TouchableOpacity>
+          {
+            console.log("data", selectedAd?.data)
+          }
           <ScrollView contentContainerStyle={{
             paddingBottom: 40, flexGrow: 1, borderRadius: 15
           }} showsVerticalScrollIndicator={false}>
-
-            {selectedAd?.Ads?.length > 0 ? (
-              selectedAd?.Ads?.map((ad, adIndex) => (
+            {selectedAd?.data?.length > 0 ? (
+              selectedAd?.data?.map((ad, adIndex) => (
 
                 <View key={adIndex} style={{ flex: 1, borderRadius: 15, marginTop: 25 }}>
 
@@ -496,15 +504,17 @@ const Home = ({ navigation, route }) => {
 
 
                     <Text style={{ color: 'rgb(10,10,0)', fontSize: 24, fontWeight: '600' }}>
-                      {selectedAd?.Ads[adIndex]?.AdDescription}
+                      {ad.AdDescription}
                     </Text>
 
+                    {
+                      console.log(ad.images[0])
+                    }
 
+                    {/* {ad?.images && ( */}
+                      <Image style={{ height: 250, width: 250, borderRadius: 15, marginTop: 10,  }} source={{ uri: `https://www.yourappdemo.com/johnradar/${ad.images[0]}`}} />
 
-                    {selectedAd?.Ads[adIndex]?.images && (
-                      <Image style={{ height: 250, width: 250, borderRadius: 15, marginTop: 10 }} source={{ uri: `https://appsdemo.pro/johnradar/${selectedAd?.Ads[adIndex]?.images}` }} />
-
-                    )}
+                    {/* // )} */}
                   </View>
                 </View>
               ))

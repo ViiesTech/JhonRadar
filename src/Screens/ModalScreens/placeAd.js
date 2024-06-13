@@ -47,6 +47,16 @@ const PlaceAd = ({ navigation }) => {
         AdDescription: '',
     })
     useEffect(() => {
+
+        const sub = navigation.addListener('focus', ()=>{
+         CallFunction()   
+        })
+
+
+    }, [navigation]);
+
+    const CallFunction = () =>{
+        console.log("Calling ......")
         let config = {
             method: 'get',
             maxBodyLength: Infinity,
@@ -59,7 +69,7 @@ const PlaceAd = ({ navigation }) => {
 
         axios.request(config)
             .then((response) => {
-                console.log("response", JSON.stringify(response.data.data));
+                console.log("response", JSON.stringify(response.data));
                 // if (response?.data?.data !== undefined) {
                 const items = response.data.data.map(item => ({
                     label: item.BussinessName,
@@ -69,10 +79,9 @@ const PlaceAd = ({ navigation }) => {
                 // }
             })
             .catch((error) => {
-                console.log(error);
+                console.log('error',error.response.data);
             });
-
-    }, []);
+    }
 
     const showToast = (type, msg) => {
         Toast.show({
@@ -95,27 +104,27 @@ const PlaceAd = ({ navigation }) => {
 
     function placeAd() {
         setIsLoading(true)
+        
         let data = new FormData();
-        // console.log('bussiness category', form.BusinessCategory)
-        // console.log('Ad Title', form.AdTitle)
-        // console.log('Ad description', form.AdDescription)
-        data.append('BussinessLocationID', value);
+        console.log(imagePath?.path, imagePath.mime)
+        data.append('BussinessLocationID',value);
         data.append('BusinessCategory', form.BusinessCategory);
         data.append('AdTitle', form.AdTitle);
         data.append('AdDescription', form.AdDescription);
-        data.append('image', {
+        data.append('images', {
             uri: imagePath?.path,
             name: 'image.jpg',
             type: imagePath?.mime,
         });
 
+
+
         let config = {
             method: 'post',
-            url: 'https://appsdemo.pro/johnradar/api/user/AdsRegister',
+            url: "https://www.yourappdemo.com/johnradar/api/user/AdsRegister",
             headers: {
                 'Content-Type': 'multipart/form-data',
                 'Authorization': `Bearer ${userToken}`,
-                // ...data.getHeaders()
             },
             data: data  // Pass data as the 'data' property of the config
         };
@@ -129,16 +138,20 @@ const PlaceAd = ({ navigation }) => {
 
             axios.request(config)
                 .then((response) => {
-                    console.log(JSON.stringify(response.data));
+                    console.log('response',JSON.stringify(response.data));
                     setIsLoading(false)
                     showToast('success', response.data.message)
                     navigation.navigate('Home')
+                
 
                 })
                 .catch((error) => {
                     setIsLoading(false)
-                    showToast('error', response.data.message)
-                    console.log(error);
+                    showToast('error', error.message)
+
+                    
+                    console.log(error.response.data);
+                    console.log(error.data);
                 });
         } else {
             setIsLoading(false)

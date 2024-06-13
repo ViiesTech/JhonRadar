@@ -70,7 +70,7 @@ const RegisterLocation = ({ navigation, route, toggleRegister }) => {
         let config = {
             method: 'post',
             maxBodyLength: Infinity,
-            url: `${BasUrl}RegisterYourLocation`,
+            url: `https://www.yourappdemo.com/johnradar/api/user/RegisterYourLocation`,
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ const RegisterLocation = ({ navigation, route, toggleRegister }) => {
                     } else {
                         setIsLoading(false)
 
-                        showToast('error', response.data)
+                        showToast('error', response.data.message)
 
                     }
                 })

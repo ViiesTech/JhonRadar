@@ -1,1 +1,1 @@
-export default "https://appsdemo.pro/johnradar/api/user/"
+export default "https://www.yourappdemo.com/johnradar/api/user/"
