@@ -86,14 +86,14 @@ const RegisterLocation = ({ navigation, route, toggleRegister }) => {
             axios.request(config)
                 .then((response) => {
                     console.log("responseee...", JSON.stringify(response.data));
-                    if (response.data.success == true) {
-                        setIsLoading(false)
+                    setIsLoading(false)
+                  
+                    if (response.data.Status == 'Success') {
 
                         showToast('success', response.data.message)
                         navigation.navigate('Home')
                         // toggleModal()
                     } else {
-                        setIsLoading(false)
 
                         showToast('error', response.data.message)
 
